@@ -55,6 +55,7 @@ def confirm_loop(prompt_str):
 #it's considered an integer. 
 #Input: a "byte" (an int)
 #Output: an int list of 0s and 1s representing a binary number
+#Expand into loop to output entirety of bytearray
 def convert_byte_to_bits(mybyte):
     myint = []
     while mybyte > 0:
