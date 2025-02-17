@@ -1,5 +1,5 @@
 #Start of project here
-
+import pickle
 #Function to handle Two Option Prompt
 #Input: A Prompt String
 #Output: A Boolean indicating which choice was picked
@@ -117,19 +117,41 @@ def huffman_compress(byte_data):
     return compressed_bytearray, huffman_tree, huffman_codes, padding           # Return results
 
 # Example Usage
-if __name__ == "__main__":
-    # Example bytearray (Simulating XOR-encrypted data)
-    result = bytearray(b"Example XOR encrypted data to be compressed!")
+# if __name__ == "__main__":
+#     # Example bytearray (Simulating XOR-encrypted data)
+#     result = bytearray(b"Example XOR encrypted data to be compressed!")
 
-    # Perform Huffman Compression
-    compressed_data, tree, codes, padding = huffman_compress(result)
+#     # Perform Huffman Compression
+#     compressed_data, tree, codes, padding = huffman_compress(result)
 
-    print("Original Size:", len(result), "bytes")
-    print("Compressed Size:", len(compressed_data), "bytes")
-    print("Huffman Codes:", codes)
-    print("Padding Added:", padding)
-    print("Compressed Data (Bytearray):", compressed_data)
+#     print("Original Size:", len(result), "bytes")
+#     print("Compressed Size:", len(compressed_data), "bytes")
+#     print("Huffman Codes:", codes)
+#     print("Padding Added:", padding)
+#     print("Compressed Data (Bytearray):", compressed_data)
 
+
+"""
+Decode functions (idk how you wanna format. i tried to fit the general design)
+"""
+def bytearray_to_binary_string(byte_data, padding):
+    binary_string = "".join(format(byte, '08b') for byte in byte_data)
+    if padding > 0:
+        binary_string = binary_string[:-padding]
+    return binary_string
+
+def huffman_decode(binary_string, tree):
+    decoded_bytes = bytearray()
+    node = tree
+    for bit in binary_string:
+        node = node.left if bit == '0' else node.right
+        if node.left is None and node.right is None:
+            decoded_bytes.append(node.byte)
+            node = tree
+    return decoded_bytes
+"""
+End of decode functions
+"""
 
 #Input Start
 print("   ___\n__/ o |\n   |  |_____ V\n   |        |\n   \________/\n")
@@ -177,16 +199,42 @@ if deen:
         encrypt_v1 = xoring_key_file(mykey,myfile)
         print(encrypt_v1)
         submit_vf = bytes(encrypt_v1)
-        """
+        
         try:
             with open("xoringEX.txt","wb") as f:
                 f.write(submit_vf)
         except FileExistsError:
             print("already exists")
-        """
+
+    """
+    I moved huffman here because we are not operating with main(). You guys can adjust however you want.
+    """
+    compressed_data, tree, codes, padding = huffman_compress(submit_vf)
+    print("Original Size:", len(submit_vf), "bytes")
+    print("Compressed Size:", len(compressed_data), "bytes")
+    print("Huffman Codes:", codes)
+    print("Padding Added:", padding)
+    print("Compressed Data (Bytearray):", compressed_data)
+    with open("huffmanCompressed.txt","wb") as hc:
+        pickle.dump((compressed_data, padding, tree), hc)
 else: 
-    #TODO: DECRYPT
-    print("hi")
+    """
+    Test by: entering the same key/file.
+    File: huffmanCompressed.txt
+    """
+    with open(file, 'rb') as f:
+        compressed_data, padding, tree = pickle.load(f)
+    
+    binary_string = bytearray_to_binary_string(compressed_data, padding)
+    xor_encrypted_data = huffman_decode(binary_string, tree)
+    
+    decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
+    
+    output_path = input("Where to save??: ").strip()
+    with open(output_path, 'wb') as f:
+        f.write(decrypted_data)
+    
+    print("View your file here:", output_path)
 
 
 
