@@ -1,5 +1,7 @@
 #Start of project here
 import pickle
+import os
+
 #Function to handle Two Option Prompt
 #Input: A Prompt String
 #Output: A Boolean indicating which choice was picked
@@ -15,6 +17,17 @@ def confirm_loop(prompt_str):
                 return True
             case _:
                 print("Invalid Input\n")
+
+#Function to check size of encrypt file is < 12mb
+#Input: file path
+#Output: Boolean
+def checkFileSize(file):
+    if(os.path.exists(file) == False):
+        return False
+
+    #Convert size to KB
+    filesize = os.stat(file).st_size/1024
+    return filesize < 12000
 
 
 #So weird thing is if you take out an element of bytearray
@@ -192,19 +205,17 @@ if deen:
     f = open(file,'rb')
     try:
         myfile = bytearray(f.read())
-    finally:
+    except:
+        f.close()
+        print("File Not Available")
+    else:
         f.close()
         #TODO: INCRYPT
-        #TODO: check that file <= 12mb 
-        encrypt_v1 = xoring_key_file(mykey,myfile)
-        print(encrypt_v1)
-        submit_vf = bytes(encrypt_v1)
-        
-        try:
-            with open("xoringEX.txt","wb") as f:
-                f.write(submit_vf)
-        except FileExistsError:
-            print("already exists")
+        if checkFileSize(file):
+            encrypt_v1 = xoring_key_file(mykey,myfile)
+            submit_vf = bytes(encrypt_v1)
+        else:
+            print("File to large to encrypt")
 
     """
     I moved huffman here because we are not operating with main(). You guys can adjust however you want.
