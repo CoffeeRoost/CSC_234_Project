@@ -202,7 +202,6 @@ file = input("Enter File Path: ")
 myfile = bytearray()
 
 if deen:
-    
     if checkFileSize(file):
         f = open(file,'rb')
         try:
@@ -214,21 +213,22 @@ if deen:
             f.close()
             #TODO: ENCRYPT
             encrypt_v1 = xoring_key_file(mykey,myfile)
-            submit_vf = bytes(encrypt_v1)
+            
+            """
+            I moved huffman here because we are not operating with main(). You guys can adjust however you want.
+            """
+            compressed_data, tree, codes, padding = huffman_compress(encrypt_v1)
+            print("Original Size:", len(encrypt_v1), "bytes")
+            print("Compressed Size:", len(compressed_data), "bytes")
+            print("Huffman Codes:", codes)
+            print("Padding Added:", padding)
+            print("Compressed Data (Bytearray):", compressed_data)
+            with open("huffmanCompressed.txt","wb") as hc:
+                pickle.dump((compressed_data, padding, tree), hc)
+                
+            #submit_vf = bytes(encrypt_v1)
     else:
         print("File to large to encrypt")
-
-    """
-    I moved huffman here because we are not operating with main(). You guys can adjust however you want.
-    """
-    compressed_data, tree, codes, padding = huffman_compress(submit_vf)
-    print("Original Size:", len(submit_vf), "bytes")
-    print("Compressed Size:", len(compressed_data), "bytes")
-    print("Huffman Codes:", codes)
-    print("Padding Added:", padding)
-    print("Compressed Data (Bytearray):", compressed_data)
-    with open("huffmanCompressed.txt","wb") as hc:
-        pickle.dump((compressed_data, padding, tree), hc)
 else: 
     """
     Test by: entering the same key/file.
