@@ -202,20 +202,21 @@ file = input("Enter File Path: ")
 myfile = bytearray()
 
 if deen:
-    f = open(file,'rb')
-    try:
-        myfile = bytearray(f.read())
-    except:
-        f.close()
-        print("File Not Available")
-    else:
-        f.close()
-        #TODO: INCRYPT
-        if checkFileSize(file):
+    
+    if checkFileSize(file):
+        f = open(file,'rb')
+        try:
+            myfile = bytearray(f.read())
+        except:
+            f.close()
+            print("File Not Available")
+        else:
+            f.close()
+            #TODO: ENCRYPT
             encrypt_v1 = xoring_key_file(mykey,myfile)
             submit_vf = bytes(encrypt_v1)
-        else:
-            print("File to large to encrypt")
+    else:
+        print("File to large to encrypt")
 
     """
     I moved huffman here because we are not operating with main(). You guys can adjust however you want.
