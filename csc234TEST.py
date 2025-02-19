@@ -2,6 +2,31 @@
 import pickle
 import os
 
+
+#While loop that checks if a file exists
+#If Mode = 0: Checks Key File Existence
+#If Mode = 1: Checks File Existence and Size Limit
+#Loops until valid Name is Given
+def fileCheck(file_name,mode):
+    exist = 3
+    intry = False
+    while not intry:
+        exist = checkFileSize(file_name,mode)
+        match exist:
+            case -1:
+                print("File does not exist")
+            case 0:
+                print("File exceeds 12mb maximum")
+            case 1:
+                return file_name
+        
+        if mode == 0:
+            file_name = input("Enter Key Path: ")
+        else:
+            file_name = input("Enter File Path: ")
+        
+
+
 #Pads file with file_size and file_extension
 #Padding bytes are the string "HARE"
 def myAdditions(file):    
@@ -44,6 +69,7 @@ def unCover(myArray):
     
     return -1
 
+
 #Function to handle Two Option Prompt
 #Input: A Prompt String
 #Output: A Boolean indicating which choice was picked
@@ -60,16 +86,25 @@ def confirm_loop(prompt_str):
             case _:
                 print("Invalid Input\n")
 
-#Function to check size of encrypt file is < 12mb
-#Input: file path
-#Output: Boolean
-def checkFileSize(file):
+
+#Input: file path, mode representing if key or file check
+#Mode = 0 (key), Mode = 1 (file)
+#Depending on the Mode, it checks for different things
+#Key Mode: If the file exists or not
+#File Mode: If the file exists or not, or if it exceeds 12mb
+def checkFileSize(file,mode):
     if(os.path.exists(file) == False):
-        return False
+        return -1
+    
+    if(mode == 0): return 1
 
     #Convert size to KB
     filesize = os.stat(file).st_size/1024
-    return filesize < 12000
+
+    if filesize > 12000:
+        return 0
+    else:
+        return 1
 
 
 #So weird thing is if you take out an element of bytearray
@@ -104,6 +139,7 @@ def xoring_key_file(key,file):
         z = z + 1
     return result
 
+
 #Extends key to 1024 bytes
 def extending_key(key):
     result = key
@@ -111,9 +147,12 @@ def extending_key(key):
     for x in range(len(key),1024):
         if(count == len(key)):
             count = 0
-        result.extend(key[count])
+        result.append(key[count])
+        count += 1
 
     return result
+
+
 
 # Huffman encoding starts here
 
@@ -238,6 +277,9 @@ mykey = bytearray()
 #if TRUE, retrieve File
 if keytype:
     size = 1024
+
+    key = fileCheck(key,0)
+
     f = open(key,'rb')
     try: 
         mykey = bytearray(f.read(size))
@@ -247,43 +289,43 @@ else: #if FALSE, convert to bytearray
     script = key.encode('utf-8')
     mykey = bytearray(script)
 
+
 if len(mykey) < 1024:
     mykey = extending_key(mykey)
 
 file = input("Enter File Path: ")
+
+file = fileCheck(file,1)
+
 myfile = bytearray()
 
+
 if deen:
-    if checkFileSize(file):
-        f = open(file,'rb')
-        try:
-            myfile = bytearray(f.read())
-        except:
-            f.close()
-            print("File Not Available")
-        else:
-            f.close()
-            #TODO: ENCRYPT
-            encrypt_v0 = myAdditions(file)
-            encrypt_v0.extend(myfile)
+    f = open(file,'rb')
+    try:
+        myfile = bytearray(f.read())
+    finally:
+        f.close()
+        
+    #TODO: ENCRYPT
+    encrypt_v0 = myAdditions(file)
+    encrypt_v0.extend(myfile)
             
-            encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
+    encrypt_v1 = xoring_key_file(mykey,myfile)
             
-            """
-            I moved huffman here because we are not operating with main(). You guys can adjust however you want.
-            """
-            compressed_data, tree, codes, padding = huffman_compress(encrypt_v1)
-            print("Original Size:", len(encrypt_v1), "bytes")
-            print("Compressed Size:", len(compressed_data), "bytes")
-            print("Huffman Codes:", codes)
-            print("Padding Added:", padding)
-            print("Compressed Data (Bytearray):", compressed_data)
-            with open("huffmanCompressed.txt","wb") as hc:
-                pickle.dump((compressed_data, padding, tree), hc)
+    """
+    I moved huffman here because we are not operating with main(). You guys can adjust however you want.
+    """
+    compressed_data, tree, codes, padding = huffman_compress(encrypt_v1)
+    print("Original Size:", len(encrypt_v1), "bytes")
+    print("Compressed Size:", len(compressed_data), "bytes")
+    print("Huffman Codes:", codes)
+    print("Padding Added:", padding)
+    print("Compressed Data (Bytearray):", compressed_data)
+    with open("huffmanCompressed.txt","wb") as hc:
+       pickle.dump((compressed_data, padding, tree), hc)
                 
-            #submit_vf = bytes(encrypt_v1)
-    else:
-        print("File to large to encrypt")
+    #submit_vf = bytes(encrypt_v1)
 else: 
     """
     Test by: entering the same key/file.
@@ -302,6 +344,3 @@ else:
         f.write(decrypted_data)
     
     print("View your file here:", output_path)
-
-
-
