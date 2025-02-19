@@ -2,6 +2,48 @@
 import pickle
 import os
 
+#Pads file with file_size and file_extension
+#Padding bytes are the string "HARE"
+def myAdditions(file):    
+    pad = bytearray("HARE".encode('utf-8'))
+    myBuff = bytearray()
+
+    #Convert size to KB
+    fileS = str(os.stat(file).st_size)
+    encoded = fileS.encode('utf-8')
+    filesize = bytearray(encoded)
+
+    split_tup = os.path.splitext(file)
+    file_extension = split_tup[-1]
+
+    file_ex=bytearray(file_extension.encode('utf-8'))
+    
+    myBuff.extend(filesize)
+    myBuff.extend(pad)
+    myBuff.extend(file_ex)
+    myBuff.extend(pad)
+
+    return myBuff
+
+
+#Grabs the first instance of the bytes "HARE" in a bytearray
+#Error: -1 if not found
+def unCover(myArray):
+    pad = bytearray("HARE".encode('utf-8'))
+
+    count = 0
+
+    for x in range(len(myArray)):
+        if myArray[x] == pad[0]:
+            for y in range(x,x+5):
+                if count == len(pad):
+                    return x
+                if myArray[y] != pad[count]:
+                    break
+                count += 1
+    
+    return -1
+
 #Function to handle Two Option Prompt
 #Input: A Prompt String
 #Output: A Boolean indicating which choice was picked
@@ -62,6 +104,16 @@ def xoring_key_file(key,file):
         z = z + 1
     return result
 
+#Extends key to 1024 bytes
+def extending_key(key):
+    result = key
+    count = 0
+    for x in range(len(key),1024):
+        if(count == len(key)):
+            count = 0
+        result.extend(key[count])
+
+    return result
 
 # Huffman encoding starts here
 
@@ -192,11 +244,11 @@ if keytype:
     finally:
         f.close()
 else: #if FALSE, convert to bytearray
-    mykey = bytearray(key, "utf-8")
+    script = key.encode('utf-8')
+    mykey = bytearray(script)
 
 if len(mykey) < 1024:
-    buf = 1024 - len(mykey)
-    mykey.extend(mykey[0:buf])
+    mykey = extending_key(mykey)
 
 file = input("Enter File Path: ")
 myfile = bytearray()
@@ -212,7 +264,10 @@ if deen:
         else:
             f.close()
             #TODO: ENCRYPT
-            encrypt_v1 = xoring_key_file(mykey,myfile)
+            encrypt_v0 = myAdditions(file)
+            encrypt_v0.extend(myfile)
+            
+            encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
             
             """
             I moved huffman here because we are not operating with main(). You guys can adjust however you want.
