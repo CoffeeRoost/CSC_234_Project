@@ -349,9 +349,16 @@ else:
 
     decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
     
+    #Uncover file size in bytes
     pos = unCover(decrypted_data)
+    fileSize = int(decrypted_data[:pos].decode('utf-8',errors="ignore"))
+
     next = decrypted_data[pos+4:]
+
+    #Uncover file type
     pos = unCover(next)
+    fileType = next[:pos].decode('utf-8',errors="ignore")
+
     decrypted_data = next[pos+4:]
 
     output_path = input("Where to save??: ").strip()
