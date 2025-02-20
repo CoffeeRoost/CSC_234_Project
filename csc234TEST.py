@@ -293,6 +293,7 @@ else: #if FALSE, convert to bytearray
 if len(mykey) < 1024:
     mykey = extending_key(mykey)
 
+
 file = input("Enter File Path: ")
 
 file = fileCheck(file,1)
@@ -310,8 +311,8 @@ if deen:
     #TODO: ENCRYPT
     encrypt_v0 = myAdditions(file)
     encrypt_v0.extend(myfile)
-            
-    encrypt_v1 = xoring_key_file(mykey,myfile)
+
+    encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
             
     """
     I moved huffman here because we are not operating with main(). You guys can adjust however you want.
@@ -324,7 +325,16 @@ if deen:
     print("Compressed Data (Bytearray):", compressed_data)
     with open("huffmanCompressed.txt","wb") as hc:
        pickle.dump((compressed_data, padding, tree), hc)
-                
+    
+    submit_vf = bytes(encrypt_v1)
+
+    """
+    try:
+        with open("xoringEX.txt","wb") as f:
+            f.write(submit_vf)
+    except FileExistsError:
+            print("already exists")
+    """
     #submit_vf = bytes(encrypt_v1)
 else: 
     """
@@ -336,14 +346,14 @@ else:
     
     binary_string = bytearray_to_binary_string(compressed_data, padding)
     xor_encrypted_data = huffman_decode(binary_string, tree)
-    
-    decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
 
+    decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
+    
     pos = unCover(decrypted_data)
     next = decrypted_data[pos+4:]
     pos = unCover(next)
     decrypted_data = next[pos+4:]
-    
+
     output_path = input("Where to save??: ").strip()
     with open(output_path, 'wb') as f:
         f.write(decrypted_data)
