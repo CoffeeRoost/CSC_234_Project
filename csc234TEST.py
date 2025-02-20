@@ -338,6 +338,11 @@ else:
     xor_encrypted_data = huffman_decode(binary_string, tree)
     
     decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
+
+    pos = unCover(decrypted_data)
+    next = decrypted_data[pos+4:]
+    pos = unCover(next)
+    decrypted_data = next[pos+4:]
     
     output_path = input("Where to save??: ").strip()
     with open(output_path, 'wb') as f:
