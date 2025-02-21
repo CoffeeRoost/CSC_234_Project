@@ -127,20 +127,12 @@ def convert_byte_to_bits(mybyte):
 
 def xoring_key_file(key,file):
     result = bytearray()
-    ending = len(file)%len(key)
-    inside = len(file)//len(key)
-    low = 0
-    z = 0
-    for x in range(inside):
-        for y in range(low,low+len(key)):
-            result.append(file[y]^key[z])
-            z = z + 1
-        low = low + inside
-        z = 0
-    z = 0
-    for w in range(len(file)-ending,len(file)):
-        result.append(file[w]^key[z])
-        z = z + 1
+    count = 0
+    for x in file:
+        if count == len(key):
+            count = 0
+        result.append(x ^ key[count])
+        count += 1
     return result
 
 
