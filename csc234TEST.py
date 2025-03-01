@@ -140,18 +140,12 @@ def xoring_key_file(key,file):
 
 def xoring_key_file(key,file):
     result = [0] * len(file)
-    mod = len(file)//4
-    index = 0
     count = 0
-    while index < len(file)-mod:
+    for x in range(len(file)):
         if count == len(key):
             count = 0
-        result[index] = file[index] ^ key[count]
-        result[index+1] = file[index+1] ^ key[count+1]
-        result[index+2] = file[index+2] ^ key[count+2]
-        result[index+3] = file[index+3] ^ key[count+3]
-        count += 4
-        index += 4
+        result[x] = file[x] ^ key[count]
+        count += 1
 
     return bytearray(result)
 
@@ -170,16 +164,13 @@ def extending_key(key):
 
 def extending_key(key,size):
     PI_pos = hash_key(key)
-
     result = [0] * size
-    mod = size//4
-    index = 0
-    while index < size-mod:
-        result[index] = int(TEN_THOUSAND_PI[PI_pos])
-        result[index+1] = int(TEN_THOUSAND_PI[PI_pos+1])
-        result[index+2] = int(TEN_THOUSAND_PI[PI_pos+2])
-        result[index+3] = int(TEN_THOUSAND_PI[PI_pos+3])
-        index += 4
+
+    for x in range(size):
+        if PI_pos == len(TEN_THOUSAND_PI):
+            PI_pos = 0
+        result[x] = int(TEN_THOUSAND_PI[PI_pos])
+        PI_pos += 1
 
     return bytearray(result)
 
@@ -200,19 +191,12 @@ def hash_key(key):
 
 def extending_file(file):
     req_pad = 16000000 - len(file)
+
     my_bytes = np.random.randint(len(file),size=req_pad)
     result = [0] * req_pad
-    mod = req_pad//4
-    index = 0
-    while index < req_pad-mod:
-        result[index] = file[my_bytes[index]]
-        result[index+1] = file[my_bytes[index+1]]
-        result[index+2] = file[my_bytes[index+2]]
-        result[index+3] = file[my_bytes[index+3]]
-        index += 4
 
-    #for x in range(req_pad):
-    #    result[x] = file[my_bytes[x]]
+    for x in range(req_pad):
+        result[x] = file[my_bytes[x]]
 
     return bytearray(result)
 
@@ -634,9 +618,11 @@ if deen:
     encrypt_v0 = myAdditions(file)
     encrypt_v0.extend(myfile)
 
-    encrypt_v0.extend(extending_file(encrypt_v0))
+    #encrypt_v0.extend(extending_file(encrypt_v0))
+    #encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
 
     encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
+    encrypt_v1.extend(extending_file(encrypt_v1))
             
     """
     I moved huffman here because we are not operating with main(). You guys can adjust however you want.
