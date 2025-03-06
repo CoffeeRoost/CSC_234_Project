@@ -9,6 +9,7 @@ import ast
 import time
 import cProfile
 import pstats
+from math import pi
 
 
 TEN_THOUSAND_PI = "31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679821480865132823066470938446095505822317253594081284811174502841027019385211055596446229489549303819644288109756659334461284756482337867831652712019091456485669234603486104543266482133936072602491412737245870066063155881748815209209628292540917153643678925903600113305305488204665213841469519415116094330572703657595919530921861173819326117931051185480744623799627495673518857527248912279381830119491298336733624406566430860213949463952247371907021798609437027705392171762931767523846748184676694051320005681271452635608277857713427577896091736371787214684409012249534301465495853710507922796892589235420199561121290219608640344181598136297747713099605187072113499999983729780499510597317328160963185950244594553469083026425223082533446850352619311881710100031378387528865875332083814206171776691473035982534904287554687311595628638823537875937519577818577805321712268066130019278766111959092164201989380952572010654858632788659361533818279682303019520353018529689957736225994138912497217752834791315155748572424541506959508295331168617278558890750983817546374649393192550604009277016711390098488240128583616035637076601047101819429555961989467678374494482553797747268471040475346462080466842590694912933136770289891521047521620569660240580381501935112533824300355876402474964732639141992726042699227967823547816360093417216412199245863150302861829745557067498385054945885869269956909272107975093029553211653449872027559602364806654991198818347977535663698074265425278625518184175746728909777727938000816470600161452491921732172147723501414419735685481613611573525521334757418494684385233239073941433345477624168625189835694855620992192221842725502542568876717904946016534668049886272327917860857843838279679766814541009538837863609506800642251252051173929848960841284886269456042419652850222106611863067442786220391949450471237137869609563643719172874677646575739624138908658326459958133904780275900994657640789512694683983525957098258226205224894077267194782684826014769909026401363944374553050682034962524517493996514314298091906592509372216964615157098583874105978859597729754989301617539284681382686838689427741559918559252459539594310499725246808459872736446958486538367362226260991246080512438843904512441365497627807977156914359977001296160894416948685558484063534220722258284886481584560285060168427394522674676788952521385225499546667278239864565961163548862305774564980355936345681743241125150760694794510965960940252288797108931456691368672287489405601015033086179286809208747609178249385890097149096759852613655497818931297848216829989487226588048575640142704775551323796414515237462343645428584447952658678210511413547357395231134271661021359695362314429524849371871101457654035902799344037420073105785390621983874478084784896833214457138687519435064302184531910484810053706146806749192781911979399520614196634287544406437451237181921799983910159195618146751426912397489409071864942319615679452080951465502252316038819301420937621378559566389377870830390697920773467221825625996615014215030680384477345492026054146659252014974428507325186660021324340881907104863317346496514539057962685610055081066587969981635747363840525714591028970641401109712062804390397595156771577004203378699360072305587631763594218731251471205329281918261861258673215791984148488291644706095752706957220917567116722910981690915280173506712748583222871835209353965725121083579151369882091444210067510334671103141267111369908658516398315019701651511685171437657618351556508849099898599823873455283316355076479185358932261854896321329330898570642046752590709154814165498594616371802709819943099244889575712828905923233260972997120844335732654893823911932597463667305836041428138830320382490375898524374417029132765618093773444030707469211201913020330380197621101100449293215160842444859637669838952286847831235526582131449576857262433441893039686426243410773226978028073189154411010446823252716201052652272111660396665573092547110557853763466820653109896526918620564769312570586356620185581007293606598764861179104533488503461136576867532494416680396265797877185560845529654126654085306143444318586769751456614068007002378776591344017127494704205622305389945613140711270004078547332699390814546646458807972708266830634328587856983052358089330657574067954571637752542021149557615814002501262285941302164715509792592309907965473761255176567513575178296664547791745011299614890304639947132962107340437518957359614589019389713111790429782856475032031986915140287080859904801094121472213179476477726224142548545403321571853061422881375850430633217518297986622371721591607716692547487389866549494501146540628433663937900397692656721463853067360965712091807638327166416274888800786925602902284721040317211860820419000422966171196377921337575114959501566049631862947265473642523081770367515906735023507283540567040386743513622224771589150495309844489333096340878076932599397805419341447377441842631298608099888687413260472156951623965864573021631598193195167353812974167729478672422924654366800980676928238280689964004824354037014163149658979409243237896907069779422362508221688957383798623001593776471651228935786015881617557829735233446042815126272037343146531977774160319906655418763979293344195215413418994854447345673831624993419131814809277771038638773431772075456545322077709212019051660962804909263601975988281613323166636528619326686336062735676303544776280350450777235547105859548702790814356240145171806246436267945612753181340783303362542327839449753824372058353114771199260638133467768796959703098339130771098704085913374641442822772634659470474587847787201927715280731767907707157213444730605700733492436931138350493163128404251219256517980694113528013147013047816437885185290928545201165839341965621349143415956258658655705526904965209858033850722426482939728584783163057777560688876446248246857926039535277348030480290058760758251047470916439613626760449256274204208320856611906254543372131535958450687724602901618766795240616342522577195429162991930645537799140373404328752628889639958794757291746426357455254079091451357111369410911939325191076020825202618798531887705842972591677813149699009019211697173727847684726860849003377024242916513005005168323364350389517029893922334517220138128069650117844087451960121228599371623130171144484640903890644954440061986907548516026327505298349187407866808818338510228334508504860825039302133219715518430635455007668282949304137765527939751754613953984683393638304746119966538581538420568533862186725233402830871123282789212507712629463229563989898935821167456270102183564622013496715188190973038119800497340723961036854066431939509790190699639552453005450580685501956730229219139339185680344903982059551002263535361920419947455385938102343955449597783779023742161727111723643435439478221818528624085140066604433258885698670543154706965747458550332323342107301545940516553790686627333799585115625784322988273723198987571415957811196358330059408730681216028764962867446047746491599505497374256269010490377819868359381465741268049256487985561453723478673303904688383436346553794986419270563872931748723320837601123029911367938627089438799362016295154133714248928307220126901475466847653576164773794675200490757155527819653621323926406160136358155907422020203187277605277219005561484255518792530343513984425322341576233610642506390497500865627109535919465897514131034822769306247435363256916078154781811528436679570611086153315044521274739245449454236828860613408414863776700961207151249140430272538607648236341433462351897576645216413767969031495019108575984423919862916421939949072362346468441173940326591840443780513338945257423995082965912285085558215725031071257012668302402929525220118726767562204154205161841634847565169998116141010029960783869092916030288400269104140792886215078424516709087000699282120660418371806535567252532567532861291042487761825829765157959847035622262934860034158722980534989650226291748788202734209222245339856264766914905562842503912757710284027998066365825488926488025456610172967026640765590429099456815065265305371829412703369313785178609040708667114965583434347693385781711386455873678123014587687126603489139095620099393610310291616152881384379099042317473363948045759314931405297634757481193567091101377517210080315590248530906692037671922033229094334676851422144773793937517034436619910403375111735471918550464490263655128162288244625759163330391072253837421821408835086573917715096828874782656995995744906617583441375223970968340800535598491754173818839994469748676265516582765848358845314277568790029095170283529716344562129640435231176006651012412006597558512761785838292041974844236080071930457618932349229279650198751872127267507981255470958904556357921221033346697499235630254947802490114195212382815309114079073860251522742995818072471625916685451333123948049470791191532673430282441860414263639548000448002670496248201792896476697583183271314251702969234889627668440323260927524960357996469256504936818360900323809293459588970695365349406034021665443755890045632882250545255640564482465151875471196218443965825337543885690941130315095261793780029741207665147939425902989695946995565761218656196733786236256125216320862869222103274889218654364802296780705765615144632046927906821207388377814233562823608963208068222468012248261177185896381409183903673672220888321513755600372798394004152970028783076670944474560134556417254370906979396122571429894671543578468788614445812314593571984922528471605049221242470141214780573455105008019086996033027634787081081754501193071412233908663938339529425786905076431006383519834389341596131854347546495569781038293097164651438407007073604112373599843452251610507027056235266012764848308407611830130527932054274628654036036745328651057065874882256981579367897669742205750596834408697350201410206723585020072452256326513410559240190274216248439140359989535394590944070469120914093870012645600162374288021092764579310657922955249887275846101264836999892256959688159205600101655256375678"
@@ -16,6 +17,7 @@ TEN_THOUSAND_PI = "3141592653589793238462643383279502884197169399375105820974944
 #While loop that checks if a file exists
 #If Mode = 0: Checks Key File Existence
 #If Mode = 1: Checks File Existence and Size Limit
+
 #Loops until valid Name is Given
 def fileCheck(file_name,mode):
     exist = 3
@@ -269,113 +271,121 @@ def huffman_compress(byte_data):
     compressed_bytearray, padding = binary_string_to_bytearray(encoded_binary)  # Step 5: Convert to Bytearray
     
     return compressed_bytearray, huffman_tree, huffman_codes, padding           # Return results
-
-# Example Usage
-# if __name__ == "__main__":
-#     # Example bytearray (Simulating XOR-encrypted data)
-#     result = bytearray(b"Example XOR encrypted data to be compressed!")
-
-#     # Perform Huffman Compression
-#     compressed_data, tree, codes, padding = huffman_compress(result)
-
-#     print("Original Size:", len(result), "bytes")
-#     print("Compressed Size:", len(compressed_data), "bytes")
-#     print("Huffman Codes:", codes)
-#     print("Padding Added:", padding)
-#     print("Compressed Data (Bytearray):", compressed_data)
 """
 Cube Shift################################################################
 """
-def join_string_list(hex_string):
-    return("".join(hex_string))
+def generate_random_data(size):
+    return bytearray(random.getrandbits(8) for _ in range(size))
 
-#different from main 8d
-def pad_right_list(lst, length, value):
-    return list(lst) + [value] * (length - len(lst))
+def bitarray_from_bytearray(bytearr):
+    return np.unpackbits(np.array(bytearr, dtype=np.uint8))
 
-def create_hypercube_and_shift(dimension, total_cube_size, key_hex, cube_data):  #Removed bit_shift_size
-    cube_side_length = 2 ** (total_cube_size // dimension)
+def create_hypercube_of_squares(bitarr, hypercube_length, square_length, num_dimensions):
+    """Creates a hypercube where each cell contains a square (square_length x square_length)."""
+    cube_size = hypercube_length ** num_dimensions * (square_length * square_length)
+    reshaped = bitarr[:cube_size].reshape((hypercube_length,) * num_dimensions + (square_length, square_length))
+    return reshaped
+
+def create_index_cube(hypercube_length, num_dimensions):
+    """Creates a hypercube where each cell contains its own multi-dimensional index."""
+    indices = np.indices((hypercube_length,) * num_dimensions)
+    index_cube = np.stack(indices, axis=-1)
+    return index_cube
+
+def apply_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions):
+    """Applies rotations based on the key to the index cube."""
+    rotated_index_cube = np.copy(index_cube)  # Avoid modifying the original
+    index = 0
+    for coords in np.ndindex((hypercube_length,) * num_dimensions):
+        for dim in range(num_dimensions):
+            shift = key[index] % hypercube_length
+            rotated_index_cube = np.roll(rotated_index_cube, shift, axis=dim)
+            index += 1
+            if index >= len(key):
+                return rotated_index_cube
+    return rotated_index_cube
+
+def reverse_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions):
+    """Applies reverse rotations based on the key to the index cube."""
+    rotated_index_cube = np.copy(index_cube)  # Avoid modifying the original
+    index = len(key) - 1
+
+    #added change revise
+    if isinstance(key, str):
+        key = key.encode()
+    ####
+    for coords in reversed(list(np.ndindex((hypercube_length,) * num_dimensions))):
+        for dim in reversed(range(num_dimensions)):
+            shift = key[index] % hypercube_length
+            rotated_index_cube = np.roll(rotated_index_cube, -shift, axis=dim)
+            index -= 1
+            if index < 0:
+                return rotated_index_cube
+    return rotated_index_cube
+
+# new fn (not from 8d)
+def coords_to_index(coords, hypercube_length):
+    """Convert multi-dimensional coordinates (tuple) into a 1D index."""
+    index = 0
+    for dim in coords:
+        index = index * hypercube_length + dim
+    return index
+############
+
+def encrypt_byte_array(byte_array, key, hypercube_length, square_length, num_dimensions):
+    """Encrypts the byte array into a hypercube of squares using the index cube rotation."""
+    bit_array = bitarray_from_bytearray(byte_array)
+    cube_of_squares = create_hypercube_of_squares(bit_array, hypercube_length, square_length, num_dimensions)
+    index_cube = create_index_cube(hypercube_length, num_dimensions)
+    rotated_index_cube = apply_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions)
+    encrypted_cube = np.zeros_like(cube_of_squares)  # Initialize with zeros, same shape and type
+
+    for coords in np.ndindex((hypercube_length,) * num_dimensions):
+        original_coords = tuple(rotated_index_cube[coords])
+        encrypted_cube[coords] = cube_of_squares[original_coords]
+
+    return encrypted_cube
+
+def decrypt_hypercube(encrypted_cube, key, hypercube_length, square_length, num_dimensions):
+    """Decrypts the hypercube of squares back into a byte array using reversed index cube rotation."""
     
-    def pad_or_truncate_key(key_hex):
-      key_temp = key_hex
-      size = (2**total_cube_size) * dimension  # Each shift is now 1 byte
-      if len(key_hex) < size:
-        key_temp = pad_right_list(key_hex, size, 0) #Pad with 0 instead of "0" (integers)
-      elif len(key_hex) > size:
-        key_temp = key_hex[0:size]
-      else:
-        key_temp = key_hex
-      return key_temp
-    
-    key = pad_or_truncate_key(key_hex)
+    index_cube = create_index_cube(hypercube_length, num_dimensions)
+    rotated_index_cube = reverse_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions)
+    decrypted_cube = np.zeros_like(encrypted_cube)  # Initialize with zeros, same shape and type
 
-    arbitrary_key = np.array(key).reshape((2**total_cube_size, dimension)) #Precompute key shifts as a numpy array
+    for coords in np.ndindex((hypercube_length,) * num_dimensions):
+        original_coords = tuple(rotated_index_cube[coords])
+        index = coords_to_index(original_coords, hypercube_length)
+        index_1d = coords_to_index(coords, hypercube_length)
+        decrypted_cube[index_1d] = encrypted_cube[index]  # Fill by reverse lookup
 
-    # MODIFY THIS LINE:  Account for 64 bytes per cell
-    hypercube_shape = (cube_side_length,) * dimension + (64,)
-    hypercube = np.array(cube_data, dtype=np.uint8).reshape(hypercube_shape) #Ensure uint8 dtype
+    # Flatten the cube back into a bit array
+    bit_array = decrypted_cube.flatten()
 
-    def rotate_bit_shift(hypercube, arbitrary_key, shift_dimension, line_index):
-        # Extract the cube index from the full index, ignoring the last dimension (64 bytes)
-        cube_index = line_index[:-1]  # Exclude the last dimension index
-        shift_amount = arbitrary_key[np.ravel_multi_index(cube_index, hypercube.shape[:-1])][shift_dimension]
-        shifted_hypercube = np.roll(hypercube, shift_amount, axis=shift_dimension) #No more copy()
-        return shifted_hypercube
-    
-    shifted_hypercube = hypercube.copy()
+    # Pack the bit array back into a byte array.  Must be multiple of 8
+    bit_array = bit_array[:len(bit_array) - (len(bit_array) % 8)]
+    byte_array = np.packbits(bit_array).tobytes()
 
-    #Correct the loop for all the shift_dimension
-    for line_index in np.ndindex(*hypercube.shape[:-1]): # Iterate only over cube indices, NOT the 64 byte cells
-        for shift_dimension in range(dimension):
-            # Add the 0 index for the byte cell dimension
-            shifted_hypercube = rotate_bit_shift(shifted_hypercube, arbitrary_key, shift_dimension, tuple(list(line_index)+[0])) #Need to add a 0 for byte offset in order to correctly shift
+    return byte_array
 
-    return hypercube, shifted_hypercube
+def pad_with_pi(data, required_size):
+    """Pads the data with digits of pi until it reaches the required size."""
+    pi_digits = str(pi).replace('.', '')  # Remove decimal point
+    padded_data = bytearray(data)
 
-#############################################
-def iterate_ndindex_backwards_generator(shape):
-    shape = tuple(shape)
-    total_size = np.prod(shape, dtype=np.intp)
-    for i in range(total_size - 1, -1, -1):
-        index = np.unravel_index(i, shape)
-        yield index
+    pi_index = 0
+    while len(padded_data) < required_size:
+        digit_pair = pi_digits[pi_index:pi_index + 2]
+        if len(digit_pair) == 2:
+            try:
+                padded_data.append(int(digit_pair)) #convert pi digit pairs to bytes
+            except ValueError:
+                padded_data.append(0) #if there is an error, pad with a zero
+        else:
+            padded_data.append(0) #pad with 0 if you can't get 2 digits.
 
-def reverse_hypercube_and_reverse_shift(dimension, total_cube_size, key_hex, cube_data):  #Removed bit_shift_size
-    cube_side_length = 2 ** (total_cube_size // dimension)
-
-    def pad_or_truncate_key(key_hex):
-      key_temp = key_hex
-      size = (2**total_cube_size) * dimension # Each shift is now 1 byte
-      if len(key_hex) < size:
-        key_temp = pad_right_list(key_hex, size, 0) #Pad with 0 instead of "0" (integers)
-      elif len(key_hex) > size:
-        key_temp = key_hex[0:size]
-      else:
-        key_temp = key_hex
-      return key_temp
-    
-    key = pad_or_truncate_key(key_hex) #No need to join string anymore
-    arbitrary_key = np.array(key).reshape((2**total_cube_size, dimension)) #Precompute key shifts as a numpy array
-
-
-    # MODIFY THIS LINE: Account for 64 bytes per cell
-    hypercube_shape = (cube_side_length,) * dimension + (64,)
-    hypercube = np.array(cube_data, dtype=np.uint8).reshape(hypercube_shape) #Ensure uint8 dtype
-
-    def rotate_bit_shift(hypercube, arbitrary_key, shift_dimension, line_index):
-        cube_index = line_index[:-1]  # Exclude the last dimension index
-        shift_amount = (cube_side_length - arbitrary_key[np.ravel_multi_index(cube_index, hypercube.shape[:-1])][shift_dimension]) % cube_side_length #Precompute
-        shifted_hypercube = np.roll(hypercube, shift_amount, axis=shift_dimension) #No more copy()
-        return shifted_hypercube
-    
-    shifted_hypercube = hypercube.copy() #Now cube has uint8 type
-
-    #Correct the loop for all the shift_dimension
-    for line_index in iterate_ndindex_backwards_generator(hypercube.shape[:-1]): # Iterate only over cube indices, NOT the 64 byte cells
-        for shift_dimension in iterate_ndindex_backwards_generator(range(dimension)):
-             shifted_hypercube = rotate_bit_shift(shifted_hypercube, arbitrary_key, shift_dimension, tuple(list(line_index)+[0])) #Need to add a 0 for byte offset in order to correctly shift
-
-    return hypercube, shifted_hypercube
+        pi_index = (pi_index + 2) % len(pi_digits) #cycle through the digits of pi
+    return padded_data[:required_size]  # Truncate if necessary
 ##########################################################################
 """
 Decode functions (idk how you wanna format. i tried to fit the general design)
@@ -403,6 +413,69 @@ def save_array_to_file(array, filename):
 def load_array_from_file(filename):
     array = np.load(filename + ".npy")
     return array
+
+
+# def prepare_bytearray_for_encryption(compressed_data, padding, tree):
+#     """Combine compressed_data, padding, and tree into a single bytearray."""
+#     compressed_data_length = len(compressed_data)
+#     length_bytes = compressed_data_length.to_bytes(4, 'big')
+#     # Convert padding (int) to a 4-byte representation (for consistency)
+#     padding_bytes = padding.to_bytes(4, 'big')  # 4 bytes to store an integer
+
+#     # Serialize tree using pickle
+#     tree_bytes = pickle.dumps(tree)  # Convert tree to bytes
+
+#     # Combine all components into a single bytearray
+#     combined_bytearray = bytearray(length_bytes) + bytearray(compressed_data) + bytearray(padding_bytes) + bytearray(tree_bytes)
+
+#     return combined_bytearray
+
+def save_encrypted_cube(encrypted_cube, filename="encrypted_cube.bin"):
+    """Save encrypted cube as a binary file."""
+    with open(filename, "wb") as f:
+        f.write(encrypted_cube)
+    print(f"Encrypted cube saved to {filename}")
+
+def load_encrypted_cube(filename="encrypted_cube.bin"):
+    """Load encrypted cube from a binary file."""
+    with open(filename, "rb") as f:
+        encrypted_cube = bytearray(f.read())  # Read as bytearray
+    print(f"Encrypted cube loaded from {filename}")
+    return encrypted_cube
+
+
+# def extract_from_bytearray(decrypted_bytearray):
+#     """Extract compressed_data, padding, and tree from the decrypted bytearray."""
+
+#     # Read the first 4 bytes as compressed_data length
+#     compressed_data_length = int.from_bytes(decrypted_bytearray[:4], 'big')
+
+#     # Extract compressed data
+#     compressed_data = decrypted_bytearray[4:4 + compressed_data_length]
+
+#     # Extract padding (next 4 bytes)
+#     padding_bytes = decrypted_bytearray[4 + compressed_data_length:4 + compressed_data_length + 4]
+#     padding = int.from_bytes(padding_bytes, 'big')
+
+#     # Extract Huffman tree bytes
+#     tree_bytes = decrypted_bytearray[4 + compressed_data_length + 4:]
+
+#     # Debugging output
+#     print(f"Extracted compressed_data length: {compressed_data_length}")
+#     print(f"Extracted padding: {padding}")
+#     print(f"Extracted tree_bytes length: {len(tree_bytes)}")
+
+#     # Validate tree_bytes before unpickling
+#     if len(tree_bytes) < 10:  # Pickle header is at least 10 bytes
+#         raise ValueError("tree_bytes is too short! Possible data corruption.")
+
+#     if not tree_bytes.startswith(b'\x80\x04'):  # Check for pickle header
+#         raise ValueError("tree_bytes does not appear to be a valid pickle object.")
+
+#     tree = pickle.loads(tree_bytes)  # Deserialize Huffman tree
+
+#     return compressed_data, padding, tree
+
 """
 End of decode functions
 """
@@ -445,6 +518,7 @@ if len(mykey) < 1024:
     mykey.extend(extending_key(mykey,1024-len(mykey)))
 
 
+
 file = input("Enter File Path: ")
 
 if(deen):
@@ -481,11 +555,20 @@ if deen:
     print("Compressed Data (Bytearray):", compressed_data)
     print(type(compressed_data))  # Should be bytearray or bytes
     print(type(padding))          # Should be int
-    print(type(tree))   
-    with open("huffmanCompressed.pkl","wb") as hc:
-       pickle.dump((compressed_data, padding, tree), hc, protocol=4)
-    
-    submit_vf = bytes(encrypt_v1)
+    print(type(tree))
+
+
+    # Save padding
+    with open("padding.pkl", "wb") as f:
+        pickle.dump(padding, f)
+
+    # Save Huffman tree
+    with open("tree.pkl", "wb") as f:
+        pickle.dump(tree, f)
+
+    print("All three parts saved successfully!")
+
+    # submit_vf = bytes(encrypt_v1)
 
     """
     try:
@@ -495,69 +578,63 @@ if deen:
             print("already exists")
     """
     #submit_vf = bytes(encrypt_v1)
-    with open("huffmanCompressed.pkl", 'rb') as f:
-        compressed_data, padding, tree = pickle.load(f)
 
-    ###CUBE SHIFT IN FUCNCTION#########
-    dimension = 3
-    total_cube_size = 12
+    ###CUBE SHIFT IN FUNCTION#########
 
-    # MODIFY THIS LINE:  Account for 64 bytes per cell.  Each cell now has 64 bytes.
-    byte_data = compressed_data
-    cube_data = list(byte_data) #
+    hypercube_length, square_length, num_dimensions = 8, 512, 3
+    data_size = hypercube_length**num_dimensions * square_length*square_length // 8
+    key_size = (hypercube_length**num_dimensions) * num_dimensions
 
-    # print(cube_data)
-    if len(cube_data) < 2**(total_cube_size) * 64:
-        cube_data.extend([0] * (2**(total_cube_size) * 64 - len(cube_data)))
+    key = mykey
+        # Generate random data and key
+    data_size = hypercube_length**num_dimensions * square_length*square_length // 8
+    original_byte_array = compressed_data #update this after everything is working :")
+    #key_size = (hypercube_length**num_dimensions) * num_dimensions
+    key = mykey
 
-
-    if len(cube_data) > 2**(total_cube_size) * 64:
-        cube_data = cube_data[0:2**(total_cube_size) * 64]
-
-
-    #Generate a bytearray for key shifts with the length of (2**total_cube_size)*dimension (one byte per key)
-    # key_byte = bytearray([random.randint(0, 255) for i in range((2**total_cube_size)*dimension)]) # Bytes
-    key_byte = mykey
+    original_byte_array = pad_with_pi(original_byte_array, data_size)
+    key = pad_with_pi(key, key_size)
+    encrypted_cube = encrypt_byte_array(original_byte_array, key, hypercube_length, square_length, num_dimensions)
 
 
-    hypercube, shifted_hypercube = create_hypercube_and_shift(
-        dimension, total_cube_size, key_byte, cube_data  #Removed bit_shift_size
-    )
-
-    data = shifted_hypercube
-    save_array_to_file(data, "shifted_array")
-
-
-    # print("diff:")
-    # print((np.array(hypercube)-np.array(og_hypercube)))
+    save_encrypted_cube(encrypted_cube, "encrypted_cube.bin")
 
 else: 
     """
     Test by: entering the same key/file.
     File: huffmanCompressed.txt
     """
-    dimension = 3
-    total_cube_size = 12
+    hypercube_length, square_length, num_dimensions = 8, 512, 3
 
-    shifted_hypercube = load_array_from_file("shifted_array")
-    print("Loaded array:", shifted_hypercube)
+    encrypted_cube = load_encrypted_cube("encrypted_cube.bin")
 
-    hypercube, og_hypercube = reverse_hypercube_and_reverse_shift(
-        dimension, total_cube_size, key, shifted_hypercube #Removed bit_shift_size
-    )
+    decrypted_bytearray = decrypt_hypercube(encrypted_cube, key, hypercube_length, square_length, num_dimensions)
 
+    with open("padding.pkl", "rb") as f:
+        padding = pickle.load(f)
 
-    with open(file, 'rb') as f:
-        compressed_data, padding, tree = pickle.load(f)
+# Load Huffman tree
+    with open("tree.pkl", "rb") as f:
+        tree = pickle.load(f)
+
+    compressed_data = decrypted_bytearray
 
     binary_string = bytearray_to_binary_string(compressed_data, padding)
     xor_encrypted_data = huffman_decode(binary_string, tree)
 
     decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
     
+    
     #Uncover file size in bytes
     pos = unCover(decrypted_data)
-    fileSize = int(decrypted_data[:pos].decode('utf-8',errors="ignore"))
+    #### error here ####
+    print(decrypted_data[:pos]) 
+    try:
+        fileSize = int(decrypted_data[:pos].decode('utf-8', errors="ignore"))
+    except ValueError as e:
+        print(f"Error converting to int: {e}")
+        fileSize = -1
+        # fileSize = int(decrypted_data[:pos].decode('utf-8',errors="ignore"))
 
     next = decrypted_data[pos+4:]
 
