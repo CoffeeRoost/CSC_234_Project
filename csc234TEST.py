@@ -63,11 +63,12 @@ def myAdditions(file):
     return myBuff
 
 
-#Grabs the first instance of the bytes "HARE" in a bytearray
-#Error: -1 if not found
+"""
 def unCover(myArray):
     pad = bytearray("HARE".encode('utf-8'))
+
     count = 0
+
     for x in range(len(myArray)):
         if myArray[x] == pad[0]:
             for y in range(x,x+5):
@@ -78,6 +79,18 @@ def unCover(myArray):
                 count += 1
     
     return -1
+"""
+
+def unCover(myArray):
+    pad = bytearray("HARE".encode('utf-8'))
+    i = 0
+
+    try:
+        i = myArray.index(pad)
+    except ValueError:
+        i = -1
+    
+    return i
 
 
 #Function to handle Two Option Prompt
