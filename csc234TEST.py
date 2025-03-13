@@ -25,6 +25,8 @@ def fileCheck(file_name,mode):
     while not intry:
         exist = checkFileSize(file_name,mode)
         match exist:
+            case -2:
+                print("File is empty")
             case -1:
                 print("File does not exist")
             case 0:
@@ -126,6 +128,8 @@ def checkFileSize(file,mode):
 
     if filesize > 12000:
         return 0
+    elif filesize <= 0:
+        return -2
     else:
         return 1
 
