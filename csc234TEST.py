@@ -514,7 +514,7 @@ End of decode functions
 """
 
 #Input Start
-print("   ___\n__/ o |\n   |  |_____ V\n   |        |\n   \________/\n")
+print("   ___\n__/ o |\n   |  |_____ V\n   |        |\n   \\________/\n")
 
 #if true, encrypt
 #if false, decrypt
