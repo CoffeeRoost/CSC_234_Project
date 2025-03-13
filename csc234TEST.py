@@ -47,15 +47,12 @@ def myAdditions(file):
     pad = bytearray("HARE".encode('utf-8'))
     myBuff = bytearray()
 
-    #Convert size to KB
+    #Grab size
     fileS = str(os.stat(file).st_size)
     encoded = fileS.encode('utf-8')
     filesize = bytearray(encoded)
 
-    split_tup = os.path.splitext(file)
-    file_extension = split_tup[-1]
-
-    file_ex=bytearray(file_extension.encode('utf-8'))
+    file_ex=bytearray(file.encode('utf-8'))
     
     myBuff.extend(filesize)
     myBuff.extend(pad)
@@ -673,10 +670,11 @@ else:
 
     #Uncover file type
     pos = unCover(next)
-    fileType = next[:pos].decode('utf-8',errors="ignore")
+    fileName = next[:pos].decode('utf-8',errors="ignore")
 
     decrypted_data = next[pos+4:]
-
+    
+    #output_path = fileName.strip()
     output_path = input("Where to save??: ").strip()
     with open(output_path, 'wb') as f:
         f.write(decrypted_data)
