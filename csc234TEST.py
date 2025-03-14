@@ -673,6 +673,7 @@ else:
     fileName = next[:pos].decode('utf-8',errors="ignore")
 
     decrypted_data = next[pos+4:]
+    #decrypted_data = decrypted_data[:fileSize]
     
     #output_path = fileName.strip()
     output_path = input("Where to save??: ").strip()
