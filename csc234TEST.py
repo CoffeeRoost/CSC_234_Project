@@ -567,6 +567,8 @@ else:
 
     decrypted_data = next[pos+4:]
 
+    #decrypted_data = decrypted_data[:fileSize]
+
     output_path = input("Where to save??: ").strip()
     with open(output_path, 'wb') as f:
         f.write(decrypted_data)
