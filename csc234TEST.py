@@ -196,19 +196,32 @@ def extending_key(key,size):
 
 
 def determine_pad(pos):
-    if pos >= len(TEN_THOUSAND_PI)-2:
+    if pos < 0:
+        pos = len(TEN_THOUSAND_PI) + pos
+    elif pos == len(TEN_THOUSAND_PI):
         pos = 0
+    elif pos > len(TEN_THOUSAND_PI):
+        pos = pos % 10000
+    
+    pos1 = pos + 1
+    pos2 = pos + 2
+
+    if pos1 == len(TEN_THOUSAND_PI):
+        pos1 = 0
+        pos2 = 1
+    elif pos2 == len(TEN_THOUSAND_PI):
+        pos2 = 0
 
     digit = int(TEN_THOUSAND_PI[pos])
     match digit:
         case 1:
-            return TEN_THOUSAND_PI[pos:pos+3]
+            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
         case 2:
-            if int(TEN_THOUSAND_PI[pos+1]) >= 5:
-                return TEN_THOUSAND_PI[pos:pos+2]
-            else: return TEN_THOUSAND_PI[pos:pos+3]
+            if int(TEN_THOUSAND_PI[pos1]) >= 5:
+                return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
+            else: return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
         case _:
-            return TEN_THOUSAND_PI[pos:pos+2]
+            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
 
 
 #Subsitute for no consistent hash function
