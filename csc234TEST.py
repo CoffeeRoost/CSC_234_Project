@@ -283,100 +283,134 @@ def huffman_compress(byte_data):
 #     print("Huffman Codes:", codes)
 #     print("Padding Added:", padding)
 #     print("Compressed Data (Bytearray):", compressed_data)
-"""
-Cube Shift################################################################
-"""
-def join_string_list(hex_string):
-    return("".join(hex_string))
 
-#different from main 8d
-def pad_right_list(lst, length, value):
-    return list(lst) + [value] * (length - len(lst))
+#### CUBE SHIFT ####
 
-def create_hypercube_and_shift(dimension, total_cube_size, key_hex, cube_data):  #Removed bit_shift_size
-    cube_side_length = 2 ** (total_cube_size // dimension)
-    
-    def pad_or_truncate_key(key_hex):
-      key_temp = key_hex
-      size = (2**total_cube_size) * dimension  # Each shift is now 1 byte
-      if len(key_hex) < size:
-        key_temp = pad_right_list(key_hex, size, 0) #Pad with 0 instead of "0" (integers)
-      elif len(key_hex) > size:
-        key_temp = key_hex[0:size]
+def generate_random_data(size):
+    return bytearray(random.getrandbits(8) for _ in range(size))
+
+def bitarray_from_bytearray(bytearr):
+    return np.unpackbits(np.array(bytearr, dtype=np.uint8))
+
+def create_hypercube_of_squares(bitarr, hypercube_length, square_length, num_dimensions):
+    """Creates a hypercube where each cell contains a square (square_length x square_length)."""
+    cube_size = hypercube_length ** num_dimensions * (square_length * square_length)
+    reshaped = bitarr[:cube_size].reshape((hypercube_length,) * num_dimensions + (square_length, square_length))
+    return reshaped
+
+def create_index_cube(hypercube_length, num_dimensions):
+    """Creates a hypercube where each cell contains its own multi-dimensional index."""
+    indices = np.indices((hypercube_length,) * num_dimensions)
+    index_cube = np.stack(indices, axis=-1)
+    return index_cube
+
+def apply_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions):
+    """Applies rotations based on the key to the index cube."""
+    rotated_index_cube = np.copy(index_cube)  # Avoid modifying the original
+    index = 0
+    for coords in np.ndindex((hypercube_length,) * num_dimensions):
+        for dim in range(num_dimensions):
+            shift = key[index] % hypercube_length
+            rotated_index_cube = np.roll(rotated_index_cube, shift, axis=dim)
+            index += 1
+    return rotated_index_cube
+
+def reverse_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions):
+    """Applies reverse rotations based on the key to the index cube."""
+    rotated_index_cube = np.copy(index_cube)  # Avoid modifying the original
+    index = len(key) - 1
+    for coords in reversed(list(np.ndindex((hypercube_length,) * num_dimensions))):
+        for dim in reversed(range(num_dimensions)):
+            shift = key[index] % hypercube_length
+            rotated_index_cube = np.roll(rotated_index_cube, -shift, axis=dim)
+            index -= 1
+    return rotated_index_cube
+
+def encrypt_byte_array(byte_array, key, hypercube_length, square_length, num_dimensions):
+    """Encrypts the byte array into a hypercube of squares using the index cube rotation."""
+    bit_array = bitarray_from_bytearray(byte_array)
+    cube_of_squares = create_hypercube_of_squares(bit_array, hypercube_length, square_length, num_dimensions)
+    index_cube = create_index_cube(hypercube_length, num_dimensions)
+    rotated_index_cube = apply_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions)
+    encrypted_cube = np.zeros_like(cube_of_squares)  # Initialize with zeros, same shape and type
+
+    for coords in np.ndindex((hypercube_length,) * num_dimensions):
+        original_coords = tuple(rotated_index_cube[coords])
+        encrypted_cube[coords] = cube_of_squares[original_coords]
+
+    return encrypted_cube
+
+def decrypt_hypercube(encrypted_cube, key, hypercube_length, square_length, num_dimensions):
+    """Decrypts the hypercube of squares back into a byte array using reversed index cube rotation."""
+    index_cube = create_index_cube(hypercube_length, num_dimensions)
+    rotated_index_cube = reverse_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions)
+    decrypted_cube = np.zeros_like(encrypted_cube)  # Initialize with zeros, same shape and type
+
+    for coords in np.ndindex((hypercube_length,) * num_dimensions):
+        original_coords = tuple(rotated_index_cube[coords])
+        decrypted_cube[coords] = encrypted_cube[original_coords]  # Fill by reverse lookup
+
+    # Flatten the cube back into a bit array
+    bit_array = decrypted_cube.flatten()
+
+    # Pack the bit array back into a byte array.  Must be multiple of 8
+    bit_array = bit_array[:len(bit_array) - (len(bit_array) % 8)]
+    byte_array = np.packbits(bit_array).tobytes()
+
+    return byte_array
+
+def pad_with_pi(data, required_size):
+    """Pads the data with digits of pi until it reaches the required size."""
+    pi_digits = str(math.pi).replace('.', '')  # Remove decimal point
+    padded_data = bytearray(data)
+
+    pi_index = 0
+    while len(padded_data) < required_size:
+        digit_pair = pi_digits[pi_index:pi_index + 2]
+        if len(digit_pair) == 2:
+            try:
+                padded_data.append(int(digit_pair)) #convert pi digit pairs to bytes
+            except ValueError:
+                padded_data.append(0) #if there is an error, pad with a zero
+        else:
+            padded_data.append(0) #pad with 0 if you can't get 2 digits.
+
+        pi_index = (pi_index + 2) % len(pi_digits) #cycle through the digits of pi
+    return padded_data[:required_size]  # Truncate if necessary
+
+def unpad_with_pi(data):
+    """Removes padding from the data, assuming it was padded with the digits of pi."""
+    pi_digits = str(math.pi).replace('.', '')
+    pi_bytes = bytearray()
+
+    # Convert the first 10 digits of pi to bytes, assuming pairs of digits are bytes
+    for i in range(0, 20, 2):  # Check first 20 digits because key padding might need more than data padding
+        digit_pair = pi_digits[i:i + 2]
+        if len(digit_pair) == 2:  # Handle cases where pi_digits has an odd length
+            try:
+                pi_bytes.append(int(digit_pair))  # Convert pi digit pairs to bytes
+            except ValueError:
+                return data  # If there's an error, assume no padding and return original data
+        else:
+            break # Stop when there's not a full digit pair
+
+    # Convert the data to bytearray if it isn't already.
+    data = bytearray(data)
+
+    # Find the index of the pi sequence in the data
+    try:
+      index = data.index(pi_bytes[0])
+      if len(data) - index >= len(pi_bytes):
+          if data[index:index + len(pi_bytes)] == pi_bytes:
+              return data[:index]  # Truncate data at the start of the pi sequence
+          else:
+              return data #didn't find it so return the data unedited
       else:
-        key_temp = key_hex
-      return key_temp
-    
-    key = pad_or_truncate_key(key_hex)
-
-    arbitrary_key = np.array(key).reshape((2**total_cube_size, dimension)) #Precompute key shifts as a numpy array
-
-    # MODIFY THIS LINE:  Account for 64 bytes per cell
-    hypercube_shape = (cube_side_length,) * dimension + (64,)
-    hypercube = np.array(cube_data, dtype=np.uint8).reshape(hypercube_shape) #Ensure uint8 dtype
-
-    def rotate_bit_shift(hypercube, arbitrary_key, shift_dimension, line_index):
-        # Extract the cube index from the full index, ignoring the last dimension (64 bytes)
-        cube_index = line_index[:-1]  # Exclude the last dimension index
-        shift_amount = arbitrary_key[np.ravel_multi_index(cube_index, hypercube.shape[:-1])][shift_dimension]
-        shifted_hypercube = np.roll(hypercube, shift_amount, axis=shift_dimension) #No more copy()
-        return shifted_hypercube
-    
-    shifted_hypercube = hypercube.copy()
-
-    #Correct the loop for all the shift_dimension
-    for line_index in np.ndindex(*hypercube.shape[:-1]): # Iterate only over cube indices, NOT the 64 byte cells
-        for shift_dimension in range(dimension):
-            # Add the 0 index for the byte cell dimension
-            shifted_hypercube = rotate_bit_shift(shifted_hypercube, arbitrary_key, shift_dimension, tuple(list(line_index)+[0])) #Need to add a 0 for byte offset in order to correctly shift
-
-    return hypercube, shifted_hypercube
-
-#############################################
-def iterate_ndindex_backwards_generator(shape):
-    shape = tuple(shape)
-    total_size = np.prod(shape, dtype=np.intp)
-    for i in range(total_size - 1, -1, -1):
-        index = np.unravel_index(i, shape)
-        yield index
-
-def reverse_hypercube_and_reverse_shift(dimension, total_cube_size, key_hex, cube_data):  #Removed bit_shift_size
-    cube_side_length = 2 ** (total_cube_size // dimension)
-
-    def pad_or_truncate_key(key_hex):
-      key_temp = key_hex
-      size = (2**total_cube_size) * dimension # Each shift is now 1 byte
-      if len(key_hex) < size:
-        key_temp = pad_right_list(key_hex, size, 0) #Pad with 0 instead of "0" (integers)
-      elif len(key_hex) > size:
-        key_temp = key_hex[0:size]
-      else:
-        key_temp = key_hex
-      return key_temp
-    
-    key = pad_or_truncate_key(key_hex) #No need to join string anymore
-    arbitrary_key = np.array(key).reshape((2**total_cube_size, dimension)) #Precompute key shifts as a numpy array
+        return data #pi sequence too short to match
+    except ValueError:  # Substring not found
+        return data # didn't find it so return the data unedited
 
 
-    # MODIFY THIS LINE: Account for 64 bytes per cell
-    hypercube_shape = (cube_side_length,) * dimension + (64,)
-    hypercube = np.array(cube_data, dtype=np.uint8).reshape(hypercube_shape) #Ensure uint8 dtype
-
-    def rotate_bit_shift(hypercube, arbitrary_key, shift_dimension, line_index):
-        cube_index = line_index[:-1]  # Exclude the last dimension index
-        shift_amount = (cube_side_length - arbitrary_key[np.ravel_multi_index(cube_index, hypercube.shape[:-1])][shift_dimension]) % cube_side_length #Precompute
-        shifted_hypercube = np.roll(hypercube, shift_amount, axis=shift_dimension) #No more copy()
-        return shifted_hypercube
-    
-    shifted_hypercube = hypercube.copy() #Now cube has uint8 type
-
-    #Correct the loop for all the shift_dimension
-    for line_index in iterate_ndindex_backwards_generator(hypercube.shape[:-1]): # Iterate only over cube indices, NOT the 64 byte cells
-        for shift_dimension in iterate_ndindex_backwards_generator(range(dimension)):
-             shifted_hypercube = rotate_bit_shift(shifted_hypercube, arbitrary_key, shift_dimension, tuple(list(line_index)+[0])) #Need to add a 0 for byte offset in order to correctly shift
-
-    return hypercube, shifted_hypercube
-##########################################################################
 """
 Decode functions (idk how you wanna format. i tried to fit the general design)
 """
@@ -476,9 +510,9 @@ if deen:
     compressed_data, tree, codes, padding = huffman_compress(encrypt_v1)
     print("Original Size:", len(encrypt_v1), "bytes")
     print("Compressed Size:", len(compressed_data), "bytes")
-    print("Huffman Codes:", codes)
-    print("Padding Added:", padding)
-    print("Compressed Data (Bytearray):", compressed_data)
+    #print("Huffman Codes:", codes)
+    #print("Padding Added:", padding)
+    #print("Compressed Data (Bytearray):", compressed_data)
     print(type(compressed_data))  # Should be bytearray or bytes
     print(type(padding))          # Should be int
     print(type(tree))   
@@ -497,35 +531,22 @@ if deen:
     #submit_vf = bytes(encrypt_v1)
     with open("huffmanCompressed.pkl", 'rb') as f:
         compressed_data, padding, tree = pickle.load(f)
+    key = mykey
+    
+    # Constants
+    hypercube_length, square_length, num_dimensions = 8, 512, 3
 
-    ###CUBE SHIFT IN FUCNCTION#########
-    dimension = 3
-    total_cube_size = 12
+    # Calculate required sizes
+    data_size = hypercube_length**num_dimensions * square_length*square_length // 8
+    key_size = (hypercube_length**num_dimensions) * num_dimensions
 
-    # MODIFY THIS LINE:  Account for 64 bytes per cell.  Each cell now has 64 bytes.
-    byte_data = compressed_data
-    cube_data = list(byte_data) #
-
-    # print(cube_data)
-    if len(cube_data) < 2**(total_cube_size) * 64:
-        cube_data.extend([0] * (2**(total_cube_size) * 64 - len(cube_data)))
-
-
-    if len(cube_data) > 2**(total_cube_size) * 64:
-        cube_data = cube_data[0:2**(total_cube_size) * 64]
-
-
-    #Generate a bytearray for key shifts with the length of (2**total_cube_size)*dimension (one byte per key)
-    # key_byte = bytearray([random.randint(0, 255) for i in range((2**total_cube_size)*dimension)]) # Bytes
-    key_byte = mykey
-
-
-    hypercube, shifted_hypercube = create_hypercube_and_shift(
-        dimension, total_cube_size, key_byte, cube_data  #Removed bit_shift_size
-    )
-
-    data = shifted_hypercube
-    save_array_to_file(data, "shifted_array")
+    # Pad with pi
+    original_byte_array = pad_with_pi(submit_vf, data_size)
+    
+    print(original_byte_array[:10])
+    key = pad_with_pi(key, key_size)
+    encrypted_cube = encrypt_byte_array(original_byte_array, key, hypercube_length, square_length, num_dimensions)
+    save_array_to_file(encrypted_cube, "shifted_array")
 
 
     # print("diff:")
@@ -536,16 +557,24 @@ else:
     Test by: entering the same key/file.
     File: huffmanCompressed.txt
     """
-    dimension = 3
-    total_cube_size = 12
-
     shifted_hypercube = load_array_from_file("shifted_array")
-    print("Loaded array:", shifted_hypercube)
 
-    hypercube, og_hypercube = reverse_hypercube_and_reverse_shift(
-        dimension, total_cube_size, key, shifted_hypercube #Removed bit_shift_size
-    )
+    key = mykey
+    
+    # Constants
+    hypercube_length, square_length, num_dimensions = 8, 512, 3
 
+    # Calculate required sizes
+    data_size = hypercube_length**num_dimensions * square_length*square_length // 8
+    key_size = (hypercube_length**num_dimensions) * num_dimensions
+
+    key = pad_with_pi(key, key_size)
+    # decrypt then unpad with pi
+    decrypted_byte_array = decrypt_hypercube(shifted_hypercube, key, hypercube_length, square_length, num_dimensions)
+    
+    unpadded_byte_array = unpad_with_pi(decrypted_byte_array)
+    
+    print(unpadded_byte_array[:10])
 
     with open(file, 'rb') as f:
         compressed_data, padding, tree = pickle.load(f)
