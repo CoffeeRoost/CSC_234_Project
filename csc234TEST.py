@@ -23,8 +23,6 @@ def fileCheck(file_name,mode):
     while not intry:
         exist = checkFileSize(file_name,mode)
         match exist:
-            case -2:
-                print("File is empty")
             case -1:
                 print("File does not exist")
             case 0:
@@ -45,12 +43,15 @@ def myAdditions(file):
     pad = bytearray("HARE".encode('utf-8'))
     myBuff = bytearray()
 
-    #Grab size
+    #Convert size to KB
     fileS = str(os.stat(file).st_size)
     encoded = fileS.encode('utf-8')
     filesize = bytearray(encoded)
 
-    file_ex=bytearray(file.encode('utf-8'))
+    split_tup = os.path.splitext(file)
+    file_extension = split_tup[-1]
+
+    file_ex=bytearray(file_extension.encode('utf-8'))
     
     myBuff.extend(filesize)
     myBuff.extend(pad)
@@ -64,14 +65,17 @@ def myAdditions(file):
 #Error: -1 if not found
 def unCover(myArray):
     pad = bytearray("HARE".encode('utf-8'))
-    i = 0
-
-    try:
-        i = myArray.index(pad)
-    except ValueError:
-        i = -1
+    count = 0
+    for x in range(len(myArray)):
+        if myArray[x] == pad[0]:
+            for y in range(x,x+5):
+                if count == len(pad):
+                    return x
+                if myArray[y] != pad[count]:
+                    break
+                count += 1
     
-    return i
+    return -1
 
 
 #Function to handle Two Option Prompt
@@ -107,8 +111,6 @@ def checkFileSize(file,mode):
 
     if filesize > 12000:
         return 0
-    elif filesize <= 0:
-        return -2
     else:
         return 1
 
@@ -164,37 +166,6 @@ def extending_key(key):
 
     return result
 
-
-
-def determine_pad(pos):
-    if pos < 0:
-        pos = len(TEN_THOUSAND_PI) + pos
-    elif pos == len(TEN_THOUSAND_PI):
-        pos = 0
-    elif pos > len(TEN_THOUSAND_PI):
-        pos = pos % 10000
-    
-    pos1 = pos + 1
-    pos2 = pos + 2
-
-    if pos1 == len(TEN_THOUSAND_PI):
-        pos1 = 0
-        pos2 = 1
-    elif pos2 == len(TEN_THOUSAND_PI):
-        pos2 = 0
-
-    digit = int(TEN_THOUSAND_PI[pos])
-    match digit:
-        case 1:
-            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
-        case 2:
-            if int(TEN_THOUSAND_PI[pos1]) >= 5:
-                return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
-            else: return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
-        case _:
-            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
-
-
 def extending_key(key,size):
     PI_pos = hash_key(key)
     result = [0] * size
@@ -202,12 +173,10 @@ def extending_key(key,size):
     for x in range(size):
         if PI_pos == len(TEN_THOUSAND_PI):
             PI_pos = 0
-        result[x] = int(determine_pad(PI_pos))
+        result[x] = int(TEN_THOUSAND_PI[PI_pos])
         PI_pos += 1
 
     return bytearray(result)
-
-
 
 
 #Subsitute for no consistent hash function
@@ -402,7 +371,7 @@ def pad_with_pi(data, required_size):
             try:
                 padded_data.append(int(digit_pair)) #convert pi digit pairs to bytes
             except ValueError:
-                padded_data.append(0) #if there is an error, pad with a zero
+                padded_data.append(0) #if there is an error, pad with a zero 
         else:
             padded_data.append(0) #pad with 0 if you can't get 2 digits.
 
@@ -572,7 +541,7 @@ if deen:
     key_size = (hypercube_length**num_dimensions) * num_dimensions
 
     # Pad with pi
-    original_byte_array = pad_with_pi(submit_vf, data_size)
+    original_byte_array = pad_with_pi(compressed_data, data_size)
     
     print(original_byte_array[:10])
     key = pad_with_pi(key, key_size)
@@ -610,15 +579,13 @@ else:
     with open(file, 'rb') as f:
         compressed_data, padding, tree = pickle.load(f)
 
-    binary_string = bytearray_to_binary_string(compressed_data, padding)
+    binary_string = bytearray_to_binary_string(unpadded_byte_array, padding)
     xor_encrypted_data = huffman_decode(binary_string, tree)
 
     decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
     
     #Uncover file size in bytes
     pos = unCover(decrypted_data)
-    fileSize = int(decrypted_data[:pos].decode('utf-8',errors="ignore"))
-
     next = decrypted_data[pos+4:]
 
     #Uncover file type
@@ -627,7 +594,6 @@ else:
 
     decrypted_data = next[pos+4:]
 
-    #decrypted_data = decrypted_data[:fileSize]
 
     output_path = input("Where to save??: ").strip()
     with open(output_path, 'wb') as f:
