@@ -23,6 +23,8 @@ def fileCheck(file_name,mode):
     while not intry:
         exist = checkFileSize(file_name,mode)
         match exist:
+            case -2:
+                print("File is empty")
             case -1:
                 print("File does not exist")
             case 0:
@@ -43,15 +45,12 @@ def myAdditions(file):
     pad = bytearray("HARE".encode('utf-8'))
     myBuff = bytearray()
 
-    #Convert size to KB
+    #Grab size
     fileS = str(os.stat(file).st_size)
     encoded = fileS.encode('utf-8')
     filesize = bytearray(encoded)
 
-    split_tup = os.path.splitext(file)
-    file_extension = split_tup[-1]
-
-    file_ex=bytearray(file_extension.encode('utf-8'))
+    file_ex=bytearray(file.encode('utf-8'))
     
     myBuff.extend(filesize)
     myBuff.extend(pad)
@@ -65,17 +64,14 @@ def myAdditions(file):
 #Error: -1 if not found
 def unCover(myArray):
     pad = bytearray("HARE".encode('utf-8'))
-    count = 0
-    for x in range(len(myArray)):
-        if myArray[x] == pad[0]:
-            for y in range(x,x+5):
-                if count == len(pad):
-                    return x
-                if myArray[y] != pad[count]:
-                    break
-                count += 1
+    i = 0
+
+    try:
+        i = myArray.index(pad)
+    except ValueError:
+        i = -1
     
-    return -1
+    return i
 
 
 #Function to handle Two Option Prompt
@@ -111,6 +107,8 @@ def checkFileSize(file,mode):
 
     if filesize > 12000:
         return 0
+    elif filesize <= 0:
+        return -2
     else:
         return 1
 
@@ -173,10 +171,38 @@ def extending_key(key,size):
     for x in range(size):
         if PI_pos == len(TEN_THOUSAND_PI):
             PI_pos = 0
-        result[x] = int(TEN_THOUSAND_PI[PI_pos])
+        result[x] = int(determine_pad(PI_pos))
         PI_pos += 1
 
     return bytearray(result)
+
+def determine_pad(pos):
+    if pos < 0:
+        pos = len(TEN_THOUSAND_PI) + pos
+    elif pos == len(TEN_THOUSAND_PI):
+        pos = 0
+    elif pos > len(TEN_THOUSAND_PI):
+        pos = pos % 10000
+    
+    pos1 = pos + 1
+    pos2 = pos + 2
+
+    if pos1 == len(TEN_THOUSAND_PI):
+        pos1 = 0
+        pos2 = 1
+    elif pos2 == len(TEN_THOUSAND_PI):
+        pos2 = 0
+
+    digit = int(TEN_THOUSAND_PI[pos])
+    match digit:
+        case 1:
+            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
+        case 2:
+            if int(TEN_THOUSAND_PI[pos1]) >= 5:
+                return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
+            else: return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
+        case _:
+            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[
 
 
 #Subsitute for no consistent hash function
