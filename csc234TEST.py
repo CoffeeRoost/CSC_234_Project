@@ -164,17 +164,7 @@ def extending_key(key):
 
     return result
 
-def extending_key(key,size):
-    PI_pos = hash_key(key)
-    result = [0] * size
 
-    for x in range(size):
-        if PI_pos == len(TEN_THOUSAND_PI):
-            PI_pos = 0
-        result[x] = int(determine_pad(PI_pos))
-        PI_pos += 1
-
-    return bytearray(result)
 
 def determine_pad(pos):
     if pos < 0:
@@ -202,7 +192,22 @@ def determine_pad(pos):
                 return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
             else: return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
         case _:
-            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[
+            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
+
+
+def extending_key(key,size):
+    PI_pos = hash_key(key)
+    result = [0] * size
+
+    for x in range(size):
+        if PI_pos == len(TEN_THOUSAND_PI):
+            PI_pos = 0
+        result[x] = int(determine_pad(PI_pos))
+        PI_pos += 1
+
+    return bytearray(result)
+
+
 
 
 #Subsitute for no consistent hash function
