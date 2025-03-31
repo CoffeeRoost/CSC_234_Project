@@ -534,7 +534,7 @@ if deen:
     key = mykey
     
     # Constants
-    hypercube_length, square_length, num_dimensions = 8, 512, 3
+    hypercube_length, square_length, num_dimensions = 8, 176, 3
 
     # Calculate required sizes
     data_size = hypercube_length**num_dimensions * square_length*square_length // 8
@@ -562,7 +562,7 @@ else:
     key = mykey
     
     # Constants
-    hypercube_length, square_length, num_dimensions = 8, 512, 3
+    hypercube_length, square_length, num_dimensions = 8, 176, 3
 
     # Calculate required sizes
     data_size = hypercube_length**num_dimensions * square_length*square_length // 8
