@@ -12,8 +12,9 @@ import pstats
 
 from mpmath import mp
 
-mp.dps = 10000  # Set precision for desired decimal places
-TEN_THOUSAND_PI = str(mp.pi)
+mp.dps = 9999 # Set precision for desired decimal places
+TEN_THOUSAND_PI = "3"+str(mp.pi)[2:]
+print(TEN_THOUSAND_PI)
 
 #While loop that checks if a file exists
 #If Mode = 0: Checks Key File Existence
