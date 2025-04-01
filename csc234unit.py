@@ -1,6 +1,6 @@
 import pytest
 import os
-import csc234V3 as mod
+import csc234TEST as mod
 
 myTestingFile = 'myTestingFile.txt'
 myFileStringLength = len(myTestingFile)
