@@ -434,169 +434,174 @@ def load_array_from_file(filename):
 End of decode functions
 """
 
-#Input Start
-print("   ___\n__/ o |\n   |  |_____ V\n   |        |\n   \________/\n")
+def main():
 
-#if true, encrypt
-#if false, decrypt
-deen = confirm_loop("Mode:\n\tEncrypt: 1\n\tDecrypt: 0") 
+    #Input Start
+    print("   ___\n__/ o |\n   |  |_____ V\n   |        |\n   \________/\n")
 
-#if true, file key
-#if false, string key
-keytype = confirm_loop("Key Type:\n\tFile: 1\n\tString: 0")
+    #if true, encrypt
+    #if false, decrypt
+    deen = confirm_loop("Mode:\n\tEncrypt: 1\n\tDecrypt: 0") 
 
-
-#get key
-key = input("Enter Key (String or Path): ")
-
-mykey = bytearray()
-
-#if TRUE, retrieve File
-if keytype:
-    size = 1024
-
-    key = fileCheck(key,0)
-
-    f = open(key,'rb')
-    try: 
-        mykey = bytearray(f.read(size))
-    finally:
-        f.close()
-else: #if FALSE, convert to bytearray
-    script = key.encode('utf-8')
-    mykey = bytearray(script)
+    #if true, file key
+    #if false, string key
+    keytype = confirm_loop("Key Type:\n\tFile: 1\n\tString: 0")
 
 
-if len(mykey) < 1024:
-    #mykey = extending_key(mykey)
-    mykey.extend(extending_key(mykey,1024-len(mykey)))
+    #get key
+    key = input("Enter Key (String or Path): ")
+
+    mykey = bytearray()
+
+    #if TRUE, retrieve File
+    if keytype:
+        size = 1024
+
+        key = fileCheck(key,0)
+
+        f = open(key,'rb')
+        try: 
+            mykey = bytearray(f.read(size))
+        finally:
+            f.close()
+    else: #if FALSE, convert to bytearray
+        script = key.encode('utf-8')
+        mykey = bytearray(script)
 
 
-file = input("Enter File Path: ")
-
-if(deen):
-    file = fileCheck(file,1)
-
-myfile = bytearray()
+    if len(mykey) < 1024:
+        #mykey = extending_key(mykey)
+        mykey.extend(extending_key(mykey,1024-len(mykey)))
 
 
-if deen:
-    f = open(file,'rb')
-    try:
-        myfile = bytearray(f.read())
-    finally:
-        f.close()
-        
-    #TODO: ENCRYPT
-    encrypt_v0 = myAdditions(file)
-    encrypt_v0.extend(myfile)
+    file = input("Enter File Path: ")
 
-    #encrypt_v0.extend(extending_file(encrypt_v0))
-    #encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
+    if(deen):
+        file = fileCheck(file,1)
 
-    encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
-    encrypt_v1.extend(extending_file(encrypt_v1))
-            
-    """
-    I moved huffman here because we are not operating with main(). You guys can adjust however you want.
-    """
-    compressed_data, tree, codes, padding = huffman_compress(encrypt_v1)
-    #print("Original Size:", len(encrypt_v1), "bytes")
-    #print("Compressed Size:", len(compressed_data), "bytes")
-    #print("Huffman Codes:", codes)
-    #print("Padding Added:", padding)
-    #print("Compressed Data (Bytearray):", compressed_data)
-    #print(type(compressed_data))  # Should be bytearray or bytes
-    #print(type(padding))          # Should be int
-    #print(type(tree))   
-    #with open("huffmanCompressed.pkl","wb") as hc:
-    #   pickle.dump((compressed_data, padding, tree), hc, protocol=4)
-    
-    #submit_vf = bytes(encrypt_v1)
-
-    key = mykey
-    
-    # Constants
-    hypercube_length, square_length, num_dimensions = 8, 160, 3
-
-    # Calculate required sizes
-    data_size = hypercube_length**num_dimensions * square_length*square_length // 8
-    key_size = (hypercube_length**num_dimensions) * num_dimensions    
-
-    # Pad with pi
-    original_byte_array = pad_with_pi(compressed_data, data_size)
-
-    print(original_byte_array[:10])
-    key = pad_with_pi(key, key_size)
-    encrypted_cube = encrypt_byte_array(original_byte_array, key, hypercube_length, square_length, num_dimensions)
-    
-    with open("huffmanCompressed.txt","wb") as hc:
-       pickle.dump((encrypted_cube, padding, tree), hc, protocol=4)
-    
-    
-    #save_array_to_file(encrypted_cube, "shifted_array")
+    myfile = bytearray()
 
 
-    # print("diff:")
-    # print((np.array(hypercube)-np.array(og_hypercube)))
+    if deen:
+        f = open(file,'rb')
+        try:
+            myfile = bytearray(f.read())
+        finally:
+            f.close()
 
-else: 
-    """
-    Test by: entering the same key/file.
-    File: huffmanCompressed.txt
-    """
-    #shifted_hypercube = load_array_from_file("shifted_array")
+        #TODO: ENCRYPT
+        encrypt_v0 = myAdditions(file)
+        encrypt_v0.extend(myfile)
 
-    with open(file, 'rb') as f:
-        shifted_hypercube, padding, tree = pickle.load(f)
+        #encrypt_v0.extend(extending_file(encrypt_v0))
+        #encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
 
-    key = mykey
-    
-    # Constants
-    hypercube_length, square_length, num_dimensions = 8, 160, 3
+        encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
+        encrypt_v1.extend(extending_file(encrypt_v1))
 
-    # Calculate required sizes
-    data_size = hypercube_length**num_dimensions * square_length*square_length // 8
-    key_size = (hypercube_length**num_dimensions) * num_dimensions
+        """
+        I moved huffman here because we are not operating with main(). You guys can adjust however you want.
+        """
+        compressed_data, tree, codes, padding = huffman_compress(encrypt_v1)
+        #print("Original Size:", len(encrypt_v1), "bytes")
+        #print("Compressed Size:", len(compressed_data), "bytes")
+        #print("Huffman Codes:", codes)
+        #print("Padding Added:", padding)
+        #print("Compressed Data (Bytearray):", compressed_data)
+        #print(type(compressed_data))  # Should be bytearray or bytes
+        #print(type(padding))          # Should be int
+        #print(type(tree))   
+        #with open("huffmanCompressed.pkl","wb") as hc:
+        #   pickle.dump((compressed_data, padding, tree), hc, protocol=4)
 
-    key = pad_with_pi(key, key_size)
-    # decrypt then unpad with pi
-    decrypted_byte_array = decrypt_hypercube(shifted_hypercube, key, hypercube_length, square_length, num_dimensions)
-    
+        #submit_vf = bytes(encrypt_v1)
 
-    unpadded_byte_array = unpad_with_pi(decrypted_byte_array)
+        key = mykey
 
+        # Constants
+        hypercube_length, square_length, num_dimensions = 8, 160, 3
 
-    print(unpadded_byte_array[:10])
+        # Calculate required sizes
+        data_size = hypercube_length**num_dimensions * square_length*square_length // 8
+        key_size = (hypercube_length**num_dimensions) * num_dimensions    
 
-    #with open(file, 'rb') as f:
-    #    compressed_data, padding, tree = pickle.load(f)
+        # Pad with pi
+        original_byte_array = pad_with_pi(compressed_data, data_size)
 
-    binary_string = bytearray_to_binary_string(unpadded_byte_array, padding)
+        print(original_byte_array[:10])
+        key = pad_with_pi(key, key_size)
+        encrypted_cube = encrypt_byte_array(original_byte_array, key, hypercube_length, square_length, num_dimensions)
 
-    xor_encrypted_data = huffman_decode(binary_string, tree)
-
-    decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
-
-    
-    #Uncover file size in bytes
-    pos = unCover(decrypted_data)
-    fileSize = int(decrypted_data[:pos].decode('utf-8',errors="ignore"))
+        with open("huffmanCompressed.txt","wb") as hc:
+           pickle.dump((encrypted_cube, padding, tree), hc, protocol=4)
 
 
-    next = decrypted_data[pos+4:]
+        #save_array_to_file(encrypted_cube, "shifted_array")
 
-    #Uncover file type
-    pos = unCover(next)
 
-    fileName = next[:pos].decode('utf-8',errors="ignore")
+        # print("diff:")
+        # print((np.array(hypercube)-np.array(og_hypercube)))
 
-    decrypted_data = next[pos+4:]
+    else: 
+        """
+        Test by: entering the same key/file.
+        File: huffmanCompressed.txt
+        """
+        #shifted_hypercube = load_array_from_file("shifted_array")
 
-    decrypted_data = decrypted_data[:fileSize]
+        with open(file, 'rb') as f:
+            shifted_hypercube, padding, tree = pickle.load(f)
 
-    output_path = input("Where to save??: ").strip()
-    with open(output_path, 'wb') as f:
-        f.write(decrypted_data)
-    
-    print("View your file here:", output_path)
+        key = mykey
+
+        # Constants
+        hypercube_length, square_length, num_dimensions = 8, 160, 3
+
+        # Calculate required sizes
+        data_size = hypercube_length**num_dimensions * square_length*square_length // 8
+        key_size = (hypercube_length**num_dimensions) * num_dimensions
+
+        key = pad_with_pi(key, key_size)
+        # decrypt then unpad with pi
+        decrypted_byte_array = decrypt_hypercube(shifted_hypercube, key, hypercube_length, square_length, num_dimensions)
+
+
+        unpadded_byte_array = unpad_with_pi(decrypted_byte_array)
+
+
+        print(unpadded_byte_array[:10])
+
+        #with open(file, 'rb') as f:
+        #    compressed_data, padding, tree = pickle.load(f)
+
+        binary_string = bytearray_to_binary_string(unpadded_byte_array, padding)
+
+        xor_encrypted_data = huffman_decode(binary_string, tree)
+
+        decrypted_data = xoring_key_file(mykey, xor_encrypted_data)
+
+
+        #Uncover file size in bytes
+        pos = unCover(decrypted_data)
+        fileSize = int(decrypted_data[:pos].decode('utf-8',errors="ignore"))
+
+
+        next = decrypted_data[pos+4:]
+
+        #Uncover file type
+        pos = unCover(next)
+
+        fileName = next[:pos].decode('utf-8',errors="ignore")
+
+        decrypted_data = next[pos+4:]
+
+        decrypted_data = decrypted_data[:fileSize]
+
+        output_path = input("Where to save??: ").strip()
+        with open(output_path, 'wb') as f:
+            f.write(decrypted_data)
+
+        print("View your file here:", output_path)
+
+if __name__=="__main__":
+    main()
