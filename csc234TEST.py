@@ -12,6 +12,7 @@ import pstats
 
 from mpmath import mp
 
+
 mp.dps = 9999 # Set precision for desired decimal places
 TEN_THOUSAND_PI = "3"+str(mp.pi)[2:]
 print(TEN_THOUSAND_PI)
@@ -26,6 +27,8 @@ def fileCheck(file_name,mode):
     while not intry:
         exist = checkFileSize(file_name,mode)
         match exist:
+            case -2:
+                print("File is empty")
             case -1:
                 print("File does not exist")
             case 0:
@@ -40,21 +43,18 @@ def fileCheck(file_name,mode):
         
 
 
-#Pads file with file_size and file_extension
+#Pads file with file_name and file_extension
 #Padding bytes are the string "HARE"
 def myAdditions(file):    
     pad = bytearray("HARE".encode('utf-8'))
     myBuff = bytearray()
 
-    #Convert size to KB
+    #Grab size
     fileS = str(os.stat(file).st_size)
     encoded = fileS.encode('utf-8')
     filesize = bytearray(encoded)
 
-    split_tup = os.path.splitext(file)
-    file_extension = split_tup[-1]
-
-    file_ex=bytearray(file_extension.encode('utf-8'))
+    file_ex=bytearray(file.encode('utf-8'))
     
     myBuff.extend(filesize)
     myBuff.extend(pad)
@@ -68,17 +68,14 @@ def myAdditions(file):
 #Error: -1 if not found
 def unCover(myArray):
     pad = bytearray("HARE".encode('utf-8'))
-    count = 0
-    for x in range(len(myArray)):
-        if myArray[x] == pad[0]:
-            for y in range(x,x+5):
-                if count == len(pad):
-                    return x
-                if myArray[y] != pad[count]:
-                    break
-                count += 1
+    i = 0
+
+    try:
+        i = myArray.index(pad)
+    except ValueError:
+        i = -1
     
-    return -1
+    return i
 
 
 #Function to handle Two Option Prompt
@@ -114,36 +111,12 @@ def checkFileSize(file,mode):
 
     if filesize > 12000:
         return 0
+    elif filesize <= 0:
+        return -2
     else:
         return 1
 
 
-#So weird thing is if you take out an element of bytearray
-#it's considered an integer. 
-#Input: a "byte" (an int)
-#Output: an int list of 0s and 1s representing a binary number
-#Expand into loop to output entirety of bytearray
-def convert_byte_to_bits(mybyte):
-    myint = []
-    while mybyte > 0:
-        bit_ = mybyte % 2
-        myint.insert(0,bit_)
-        mybyte = mybyte//2
-    return myint
-
-
-"""
-def xoring_key_file(key,file):
-    result = bytearray()
-    count = 0
-    for x in file:
-        if count == len(key):
-            count = 0
-        result.append(x ^ key[count])
-        count += 1
-    
-    return result
-"""
 
 def xoring_key_file(key,file):
     result = [0] * len(file)
@@ -157,26 +130,43 @@ def xoring_key_file(key,file):
     return bytearray(result)
 
 
-#Extends key to 1024 bytes
-def extending_key(key):
-    result = key
-    count = 0
-    for x in range(len(key),1024):
-        if(count == len(key)):
-            count = 0
-        result.append(key[count])
-        count += 1
+def determine_pad(pos):
+    if pos < 0:
+        pos = len(TEN_THOUSAND_PI) + pos
+    elif pos == len(TEN_THOUSAND_PI):
+        pos = 0
+    elif pos > len(TEN_THOUSAND_PI):
+        pos = pos % 10000
+    
+    pos1 = pos + 1
+    pos2 = pos + 2
 
-    return result
+    if pos1 == len(TEN_THOUSAND_PI):
+        pos1 = 0
+        pos2 = 1
+    elif pos2 == len(TEN_THOUSAND_PI):
+        pos2 = 0
+
+    digit = int(TEN_THOUSAND_PI[pos])
+    match digit:
+        case 1:
+            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
+        case 2:
+            if int(TEN_THOUSAND_PI[pos1]) >= 5:
+                return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
+            else: return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1] + "" + TEN_THOUSAND_PI[pos2]
+        case _:
+            return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
 
 def extending_key(key,size):
     PI_pos = hash_key(key)
+
     result = [0] * size
 
     for x in range(size):
         if PI_pos == len(TEN_THOUSAND_PI):
             PI_pos = 0
-        result[x] = int(TEN_THOUSAND_PI[PI_pos])
+        result[x] = int(determine_pad(PI_pos))
         PI_pos += 1
 
     return bytearray(result)
