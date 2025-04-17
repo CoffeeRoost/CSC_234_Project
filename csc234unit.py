@@ -9,7 +9,7 @@ myStringPI_size = 10000
 
 myMaxFileSize = 16000000
 
-myPadding = 'HARE'
+myPadding = '?>*:||:*<?'
 myPaddingStringLength = len(myPadding)
 
 myKeySize = 1024
