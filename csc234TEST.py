@@ -14,6 +14,8 @@ from mpmath import mp
 
 mp.dps = 10000 # Set precision for desired decimal places
 TEN_THOUSAND_PI = "3"+str(mp.pi)[2:]
+paddingFile = "?>*:||:*<?"
+paddingFilelen = len(paddingFile)
 #print(len(TEN_THOUSAND_PI))
 
 
@@ -46,7 +48,7 @@ def fileCheck(file_name,mode):
 #Pads file with file_name and file_extension
 #Padding bytes are the string "HARE"
 def myAdditions(file):    
-    pad = bytearray("HARE".encode('utf-8'))
+    pad = bytearray(paddingFile.encode('utf-8'))
     myBuff = bytearray()
 
     #Grab size
@@ -67,7 +69,7 @@ def myAdditions(file):
 #Grabs the first instance of the bytes "HARE" in a bytearray
 #Error: -1 if not found
 def unCover(myArray):
-    pad = bytearray("HARE".encode('utf-8'))
+    pad = bytearray(paddingFile.encode('utf-8'))
     i = 0
 
     try:
@@ -516,6 +518,12 @@ def main():
 
         #submit_vf = bytes(encrypt_v1)
 
+        padding2 = pickle.dumps(padding)
+        padding2 = bytearray(padding2)
+
+        tree2 = pickle.dumps(tree)
+        tree2 = bytearray(tree2)
+
         key = mykey
 
         # Constants
@@ -527,13 +535,20 @@ def main():
 
         # Pad with pi
         original_byte_array = pad_with_pi(compressed_data, data_size)
+        padding2 = pad_with_pi(padding2,data_size)
+        tree2 = pad_with_pi(tree2,data_size)
+        
 
         print(original_byte_array[:10])
+
         key = pad_with_pi(key, key_size)
+
         encrypted_cube = encrypt_byte_array(original_byte_array, key, hypercube_length, square_length, num_dimensions)
+        padding2 = encrypt_byte_array(padding2, key, hypercube_length, square_length, num_dimensions)
+        tree2 = encrypt_byte_array(tree2, key, hypercube_length, square_length, num_dimensions)
 
         with open("huffmanCompressed.txt","wb") as hc:
-           pickle.dump((encrypted_cube, padding, tree), hc, protocol=4)
+           pickle.dump((encrypted_cube, padding2, tree2), hc, protocol=4)
 
 
         #save_array_to_file(encrypted_cube, "shifted_array")
@@ -564,10 +579,15 @@ def main():
         key = pad_with_pi(key, key_size)
         # decrypt then unpad with pi
         decrypted_byte_array = decrypt_hypercube(shifted_hypercube, key, hypercube_length, square_length, num_dimensions)
-
+        padding = decrypt_hypercube(padding, key, hypercube_length, square_length, num_dimensions)
+        tree = decrypt_hypercube(tree, key, hypercube_length, square_length, num_dimensions)
 
         unpadded_byte_array = unpad_with_pi(decrypted_byte_array)
+        padding = unpad_with_pi(padding)
+        tree = unpad_with_pi(tree)
 
+        padding = pickle.loads(padding)
+        tree = pickle.loads(tree)
 
         print(unpadded_byte_array[:10])
 
@@ -586,14 +606,14 @@ def main():
         fileSize = int(decrypted_data[:pos].decode('utf-8',errors="ignore"))
 
 
-        next = decrypted_data[pos+4:]
+        next = decrypted_data[pos+paddingFilelen:]
 
         #Uncover file type
         pos = unCover(next)
 
         fileName = next[:pos].decode('utf-8',errors="ignore")
 
-        decrypted_data = next[pos+4:]
+        decrypted_data = next[pos+paddingFilelen:]
 
         decrypted_data = decrypted_data[:fileSize]
 
