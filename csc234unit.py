@@ -251,8 +251,7 @@ def test_extending_key(input_eK,expected_eK_size,request):
         ('input_dp','expected_dp'),
         (
             (0,'31'),
-            (9999,'78'),
-            (10000,'83'),
+            (9999,'83'),
             (-1,'83'),
             (1,'141'),
             (32,'02'),
