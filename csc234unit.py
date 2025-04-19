@@ -297,3 +297,153 @@ def test_hask_key(input_hK,min_in,max_ex,expected_B,request):
 def test_extending_file(input_eF,expected_eF_size,request):
     input_eF = request.getfixturevalue(input_eF)
     assert len(mod.extending_file(input_eF)) == expected_eF_size
+
+# Fixtures providing test data for HUFFMAN start here
+
+@pytest.fixture
+def simple_data():
+    # Returns a bytearray with a mix of characters.
+    # Example: b"aaabbc" -> frequencies: a=3, b=2, c=1
+    return bytearray(b"aaabbc")
+
+@pytest.fixture
+def single_byte_data():
+    # Returns a bytearray with a single repeated character.
+    # This is an edge case for Huffman encoding (only one type of symbol).
+    return bytearray(b"aaaaaa")
+
+@pytest.fixture
+def empty_data():
+    # Returns an empty bytearray.
+    return bytearray()
+
+
+# 1. Testing build_freq_table
+
+def test_build_freq_table_simple(simple_data):
+    freq = mod.build_freq_table(simple_data)
+    # Expecting: 'a' (97): 3, 'b' (98): 2, 'c' (99): 1.
+    assert freq[97] == 3
+    assert freq[98] == 2
+    assert freq[99] == 1
+
+def test_build_freq_table_empty(empty_data):
+    freq = mod.build_freq_table(empty_data)
+    # Expect an empty frequency table.
+    assert freq == {}
+
+
+# 2. Testing build_huffman_tree
+
+def test_build_huffman_tree_simple(simple_data):
+    freq = mod.build_freq_table(simple_data)
+    tree = mod.build_huffman_tree(freq)
+    # The total frequency at the root should equal the length of the data.
+    assert tree.freq == len(simple_data)
+
+def test_build_huffman_tree_single(single_byte_data):
+    freq = mod.build_freq_table(single_byte_data)
+    tree = mod.build_huffman_tree(freq)
+    # For a single unique byte, the tree should be a leaf with no children.
+    assert tree.byte is not None
+    assert tree.left is None and tree.right is None
+    assert tree.freq == len(single_byte_data)
+
+
+# 3. Testing generate_codes
+
+def test_generate_codes_simple(simple_data):
+    freq = mod.build_freq_table(simple_data)
+    tree = mod.build_huffman_tree(freq)
+    codes = mod.generate_codes(tree)
+    # Each unique byte in data should have an associated code.
+    for byte in freq:
+        assert byte in codes
+        # For a multi-symbol data, code should not be empty.
+        if len(freq) > 1:
+            assert codes[byte] != ""
+        assert isinstance(codes[byte], str)
+
+def test_generate_codes_single(single_byte_data):
+    freq = mod.build_freq_table(single_byte_data)
+    tree = mod.build_huffman_tree(freq)
+    codes = mod.generate_codes(tree)
+    # Even if only one symbol exists, a code (possibly empty) should be assigned.
+    for byte in freq:
+        assert byte in codes
+
+
+# 4. Testing huffman_encode
+
+def test_huffman_encode(simple_data):
+    freq = mod.build_freq_table(simple_data)
+    tree = mod.build_huffman_tree(freq)
+    codes = mod.generate_codes(tree)
+    binary_str = mod.huffman_encode(simple_data, codes)
+    # The binary string's length should equal the sum of the code lengths for each byte.
+    expected_length = sum(len(codes[byte]) for byte in simple_data)
+    assert len(binary_str) == expected_length
+    # Only binary digits should be present.
+    assert set(binary_str) <= {'0', '1'}
+
+
+# 5. Testing binary_string_to_bytearray
+
+def test_binary_string_to_bytearray_exact():
+    # Use a binary string that is a multiple of 8: "01010101" represents 85.
+    bin_str = "01010101"
+    ba, padding = mod.binary_string_to_bytearray(bin_str)
+    # Note: The implementation pads even if the input is a multiple of 8.
+    # With 8 bits input, padded_length becomes 8 (appending eight '0's), resulting in 16 bits total.
+    assert len(ba) == 2
+    # The first byte equals 85; the second should be 0.
+    assert ba[0] == 85
+    assert ba[1] == 0
+    assert padding == 8
+
+def test_binary_string_to_bytearray_non_multiple():
+    # Use a binary string whose length is not a multiple of 8, e.g. "101" (length 3).
+    bin_str = "101"
+    ba, padding = mod.binary_string_to_bytearray(bin_str)
+    # Expect padded_length = 8 - 3 = 5, making the total length 8 bits.
+    assert len(ba) == 1
+    # "101" + "00000" -> "10100000" equals 160 in decimal.
+    assert ba[0] == int("10100000", 2)
+    assert padding == 5
+
+
+# 6. Testing huffman_compress and huffman_decode round-trip
+
+def test_huffman_compress_roundtrip(simple_data):
+    # Compress the simple_data.
+    compressed_data, tree, codes, padding = mod.huffman_compress(simple_data)
+    # Validate types.
+    assert isinstance(compressed_data, bytearray)
+    assert isinstance(padding, int)
+    # Recover the binary string from the compressed data.
+    binary_str = mod.bytearray_to_binary_string(compressed_data, padding)
+    # Decode the binary string back to the original data.
+    decoded = mod.huffman_decode(binary_str, tree)
+    assert decoded == simple_data
+
+def test_huffman_compress_empty(empty_data):
+    # For empty input,expect an IndexError due to an empty frequency table.
+    with pytest.raises(IndexError):
+        mod.huffman_compress(empty_data)
+
+
+# 7. Testing behavior of huffman_decode with an incorrect tree
+
+def test_huffman_decode_incorrect_tree(simple_data):
+    # Compress the data properly.
+    compressed_data, tree, codes, padding = mod.huffman_compress(simple_data)
+    binary_str = mod.bytearray_to_binary_string(compressed_data, padding)
+    # Create a different Huffman tree from a single-byte dataset.
+    single_freq = mod.build_freq_table(bytearray(b"a"))
+    wrong_tree = mod.build_huffman_tree(single_freq)
+    # Expect an AttributeError when using the wrong tree.
+    with pytest.raises(AttributeError):
+        mod.huffman_decode(binary_str, wrong_tree)
+
+
+
