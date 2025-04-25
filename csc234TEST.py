@@ -106,7 +106,7 @@ def checkFileSize(file,mode):
     if(os.path.exists(file) == False):
         return -1
     
-    if(mode == 0): return 1
+    if(mode == 0 or mode == 2): return 1
 
     #Convert size to KB
     filesize = os.stat(file).st_size/1024
@@ -480,6 +480,8 @@ def main():
 
     if(deen):
         file = fileCheck(file,1)
+    else:
+        file = fileCheck(file,2)
 
     myfile = bytearray()
 
