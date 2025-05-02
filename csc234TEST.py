@@ -108,12 +108,12 @@ def checkFileSize(file,mode):
     if(os.path.exists(file) == False):
         return -1
     
-    if(mode == 0 or mode == 2): return 1
+    if(mode == 0): return 1
 
     #Convert size to KB
     filesize = os.stat(file).st_size/1024
 
-    if filesize > 12000:
+    if filesize > 12000 and mode == 1:
         return 0
     elif filesize <= 0:
         return -2
