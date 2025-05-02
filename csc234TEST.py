@@ -511,6 +511,8 @@ def main():
     if len(mykey) < 1024:
         #mykey = extending_key(mykey)
         mykey.extend(extending_key(mykey,1024-len(mykey)))
+    elif len(mykey) > 1024:
+        mykey = mykey[:1024]
 
 
     file = input("Enter File Path: ")
