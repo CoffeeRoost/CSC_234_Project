@@ -9,6 +9,8 @@ import ast
 import time
 import cProfile
 import pstats
+import pandas as pd
+import timeit
 
 from mpmath import mp
 
@@ -436,6 +438,41 @@ def load_array_from_file(filename):
 End of decode functions
 """
 
+# These methods are used for tracking the bytes and the 
+# frequency within the given phase.
+# sort_by_byte: receives a dictionary item that contains byte (key) and frequency (values)
+# and returns an array of each byte frequency
+#
+# csv_maker inserts the data into a csv file
+# the data from the last encrypt is kept in decrypt mode
+# the data form the last decrypt is kept in encrypt mode
+
+
+def sort_by_byte(dictionary_f):
+    a = []
+    for i in range(256):
+        if i in dictionary_f:
+            a.append(dictionary_f[i])
+        else:
+            a.append(0)
+
+    return a
+
+def csv_maker(original_byte=1,xoring_byte=1,huffman_byte=1,encrypted_bit=1,decrypted_bit=1):
+    d = pd.read_csv(csv_frequency_track) 
+    if decrypted_bit == 1:
+        d["ORIGINAL"] = sort_by_byte(build_freq_table(original_byte))
+        d["E:XORING&PADDING"] = sort_by_byte(build_freq_table(xoring_byte))
+        d["E:HUFFMAN"] = sort_by_byte(build_freq_table(huffman_byte))
+        d["ENCRYPTED"] = sort_by_byte(build_freq_table(encrypted_bit.flatten()))
+    else:
+        d["D:ENCRYPTED"] = sort_by_byte(build_freq_table(encrypted_bit.flatten()))
+        d["D:HUFFMAN"] = sort_by_byte(build_freq_table(huffman_byte))
+        d["D:XORING&PADDING"] = sort_by_byte(build_freq_table(xoring_byte))
+        d["DECRYPTED"] = sort_by_byte(build_freq_table(decrypted_bit))
+
+    d.to_csv(csv_frequency_track,index=False)
+
 def main():
 
     #Input Start
@@ -549,15 +586,13 @@ def main():
         padding2 = encrypt_byte_array(padding2, key, hypercube_length, square_length, num_dimensions)
         tree2 = encrypt_byte_array(tree2, key, hypercube_length, square_length, num_dimensions)
 
+        #Uncomment for frequency analysis on bytes csv
+        #csv_maker(myfile,encrypt_v1,compressed_data,encrypted_cube)
+        
         with open("huffmanCompressed.txt","wb") as hc:
            pickle.dump((encrypted_cube, padding2, tree2), hc, protocol=4)
 
 
-        #save_array_to_file(encrypted_cube, "shifted_array")
-
-
-        # print("diff:")
-        # print((np.array(hypercube)-np.array(og_hypercube)))
 
     else: 
         """
@@ -618,6 +653,9 @@ def main():
         decrypted_data = next[pos+paddingFilelen:]
 
         decrypted_data = decrypted_data[:fileSize]
+
+        #Uncomment for frequency analysis on bytes csv
+        #csv_maker(xoring_byte=xor_encrypted_data,huffman_byte=unpadded_byte_array,encrypted_bit=shifted_hypercube,decrypted_bit=decrypted_data)
 
         output_path = input("Where to save??: ").strip()
         with open(output_path, 'wb') as f:
