@@ -262,10 +262,18 @@ class Node:
 
 
 # Step 1: Build Frequency Table
+#Takes input data (typically a bytearray) and returns a 
+#frequency table as a counter mapping each byte to its 
+#number of occurrences.
+
 def build_freq_table(data):
     return Counter(data)                   # Returns {byte: count}
 
 # Step 2: Build Huffman Tree
+#Builds a Huffman Tree from the frequency table. 
+#Uses a priority queue (min-heap) to iteratively merge 
+#the two lowest-frequency nodes until one root node remains.
+
 def build_huffman_tree(freq_table):
     heap = [Node(byte, freq) for byte, freq in freq_table.items()]
     heapq.heapify(heap)                    # Building Min-heap based on frequency
@@ -281,6 +289,9 @@ def build_huffman_tree(freq_table):
     return heap[0]                                    # Root of Huffman Tree
 
 # Step 3: Generate Huffman Codes
+#Traverses the Huffman Tree and assigns binary 
+#codes to each byte based on its path (left = '0', right = '1'), 
+#returning a dictionary of Huffman codes.
 def generate_codes(root, prefix="", code_map={}):
     if root:
         if root.byte is not None:                            # Leaf node
@@ -290,10 +301,16 @@ def generate_codes(root, prefix="", code_map={}):
     return code_map
 
 # Step 4: Encode Data Using Huffman Codes
+#Encodes the original byte data into a binary string using 
+#the generated Huffman codes.
 def huffman_encode(data, code_map):                          # Looking up the Huffman code in code_map for each byte in data (bytearray containing the original data)
     return "".join(code_map[byte] for byte in data)          # Concatenating the huffman code into a single binary string
 
 # Step 5: Convert Binary String to Bytearray
+#Converts a binary string into a bytearray, padding 
+#it to ensure full bytes. Returns both the bytearray and
+#the number of padding bits added.
+
 def binary_string_to_bytearray(binary_string):
     padded_length = 8 - (len(binary_string) % 8)
     binary_string += "0" * padded_length                                                          # Padding to full bytes
@@ -301,6 +318,10 @@ def binary_string_to_bytearray(binary_string):
     return byte_data, padded_length                                                               # Return bytearray and padding info(indicates the number of '0' bits added)
 
 # Main Function: Huffman Encoding (Returning Bytearray)
+#Main function that compresses byte data using Huffman 
+#encoding. Returns the compressed bytearray, the Huffman 
+#tree, Huffman codes, and padding length.
+
 def huffman_compress(byte_data):
     freq_table = build_freq_table(byte_data)                                    # Step 1: Frequency Table
     huffman_tree = build_huffman_tree(freq_table)                               # Step 2: Huffman Tree
@@ -329,21 +350,30 @@ def huffman_compress(byte_data):
 def generate_random_data(size):
     return bytearray(random.getrandbits(8) for _ in range(size))
 
+#Converts a bytearray into a NumPy array of bits (0 or 1), 
+#representing the binary form of each byte.
+
 def bitarray_from_bytearray(bytearr):
     return np.unpackbits(np.array(bytearr, dtype=np.uint8))
 
+#Reshapes a bit array into a multi-dimensional NumPy array 
+#(hypercube) where each cell contains a square.
 def create_hypercube_of_squares(bitarr, hypercube_length, square_length, num_dimensions):
     """Creates a hypercube where each cell contains a square (square_length x square_length)."""
     cube_size = hypercube_length ** num_dimensions * (square_length * square_length)
     reshaped = bitarr[:cube_size].reshape((hypercube_length,) * num_dimensions + (square_length, square_length))
     return reshaped
 
+#Creates a multi-dimensional NumPy array (hypercube) where 
+#each cell contains its own multi-dimensional index (coordinates).
 def create_index_cube(hypercube_length, num_dimensions):
     """Creates a hypercube where each cell contains its own multi-dimensional index."""
     indices = np.indices((hypercube_length,) * num_dimensions)
     index_cube = np.stack(indices, axis=-1)
     return index_cube
 
+#Applies rotations to the index_cube along each dimension 
+#based on the values in the key.
 def apply_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions):
     """Applies rotations based on the key to the index cube."""
     rotated_index_cube = np.copy(index_cube)  # Avoid modifying the original
@@ -355,6 +385,9 @@ def apply_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensi
             index += 1
     return rotated_index_cube
 
+#Applies reverse rotations to the index_cube along each 
+#dimension, undoing the rotations performed by 
+#apply_rotations_to_index_cube.
 def reverse_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimensions):
     """Applies reverse rotations based on the key to the index cube."""
     rotated_index_cube = np.copy(index_cube)  # Avoid modifying the original
@@ -366,6 +399,9 @@ def reverse_rotations_to_index_cube(index_cube, key, hypercube_length, num_dimen
             index -= 1
     return rotated_index_cube
 
+#Encrypts a byte_array by reshaping it into a hypercube,
+#rotating the hypercube's indices, and rearranging the data 
+#based on the rotated indices.
 def encrypt_byte_array(byte_array, key, hypercube_length, square_length, num_dimensions):
     """Encrypts the byte array into a hypercube of squares using the index cube rotation."""
     bit_array = bitarray_from_bytearray(byte_array)
@@ -380,6 +416,9 @@ def encrypt_byte_array(byte_array, key, hypercube_length, square_length, num_dim
 
     return encrypted_cube
 
+#Decrypts an encrypted_cube by reversing the index rotations and
+#rearranging the data back to its original order. The result 
+#is converted back into a byte array.
 def decrypt_hypercube(encrypted_cube, key, hypercube_length, square_length, num_dimensions):
     """Decrypts the hypercube of squares back into a byte array using reversed index cube rotation."""
     index_cube = create_index_cube(hypercube_length, num_dimensions)
@@ -399,6 +438,8 @@ def decrypt_hypercube(encrypted_cube, key, hypercube_length, square_length, num_
 
     return byte_array
 
+#Pads a bytearray with digits of pi (converted to bytes) 
+#until it reaches the required_size.
 def pad_with_pi(data, required_size):
     """Pads the data with digits of pi until it reaches the required size."""
     pi_digits = str(math.pi).replace('.', '')  # Remove decimal point
@@ -418,6 +459,8 @@ def pad_with_pi(data, required_size):
         pi_index = (pi_index + 2) % len(pi_digits) #cycle through the digits of pi
     return padded_data[:required_size]  # Truncate if necessary
 
+#Removes the pi padding from a bytearray, identifying and removing 
+#the pi digit sequence.
 def unpad_with_pi(data):
     """Removes padding from the data, assuming it was padded with the digits of pi."""
     pi_digits = str(math.pi).replace('.', '')
@@ -454,12 +497,17 @@ def unpad_with_pi(data):
 """
 Decode functions (idk how you wanna format. i tried to fit the general design)
 """
+#Converts a bytearray back to a binary string and 
+#removes the padding bits added during compression.
 def bytearray_to_binary_string(byte_data, padding):
     binary_string = "".join(format(byte, '08b') for byte in byte_data)
     if padding > 0:
         binary_string = binary_string[:-padding]
     return binary_string
 
+#Decodes a binary string using the Huffman tree by 
+#traversing from the root based on bits. Outputs the 
+#original uncompressed byte data.
 def huffman_decode(binary_string, tree):
     decoded_bytes = bytearray()
     node = tree
@@ -489,8 +537,6 @@ End of decode functions
 # csv_maker inserts the data into a csv file
 # the data from the last encrypt is kept in decrypt mode
 # the data form the last decrypt is kept in encrypt mode
-
-
 def sort_by_byte(dictionary_f):
     a = []
     for i in range(256):
