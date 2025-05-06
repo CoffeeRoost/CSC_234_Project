@@ -23,8 +23,9 @@ paddingFilelen = len(paddingFile)
 
 #While loop that checks if a file exists
 #If Mode = 0: Checks Key File Existence
-#If Mode = 1: Checks File Existence and Size Limit
-#Loops until valid Name is Given
+#If Mode = 1: Checks File Existence, Size Limit, and NonEmpty
+#If Mode = 2: Checks File Existence and Nonempty
+#Loops until valid File Name is Given
 def fileCheck(file_name,mode):
     exist = 3
     intry = False
@@ -47,8 +48,10 @@ def fileCheck(file_name,mode):
         
 
 
-#Pads file with file_name and file_extension
-#Padding bytes are the string "HARE"
+#Creates a bytearray containing the file’s size and name. 
+#This bytearray is then extended to contain the original 
+#file’s bytes after function return.
+#Padding String is determined by paddingFile
 def myAdditions(file):    
     pad = bytearray(paddingFile.encode('utf-8'))
     myBuff = bytearray()
@@ -68,8 +71,14 @@ def myAdditions(file):
     return myBuff
 
 
-#Grabs the first instance of the bytes "HARE" in a bytearray
-#Error: -1 if not found
+#Returns the first index of the padding string to mark the end
+#of the padded information. Used twice in the Decryption phase 
+#to grab the file’s original name and size. This information is 
+#later used to restore the original file through its saving
+#(by name) and the excess extending bytes removal (cut off at 
+#original size).
+#Error if Padding String not found: -1
+#Padding string is determined by paddingFile
 def unCover(myArray):
     pad = bytearray(paddingFile.encode('utf-8'))
     i = 0
@@ -85,6 +94,9 @@ def unCover(myArray):
 #Function to handle Two Option Prompt
 #Input: A Prompt String
 #Output: A Boolean indicating which choice was picked
+#Loops on Invalid Input
+#Key Mode: string (0) or file (1)
+#Program Mode: decrypt (0) or encrypt (1)
 def confirm_loop(prompt_str):
     intry = False
     while not intry:
@@ -100,10 +112,12 @@ def confirm_loop(prompt_str):
 
 
 #Input: file path, mode representing if key or file check
-#Mode = 0 (key), Mode = 1 (file)
+#Mode = 0 (key), Mode = 1 (encrypt file), Mode = 2 (decrypt file)
 #Depending on the Mode, it checks for different things
 #Key Mode: If the file exists or not
-#File Mode: If the file exists or not, or if it exceeds 12mb
+#Decrypt File Mode: If the file exists or not, or if it is empty
+#Encrypt File Mode: If the file exists or not, or if it is empty,
+# or if it exceeds 12mb
 def checkFileSize(file,mode):
     if(os.path.exists(file) == False):
         return -1
@@ -120,8 +134,10 @@ def checkFileSize(file,mode):
     else:
         return 1
 
-
-
+#Takes the bytearray forms of the key and file and xors 
+#each of their bytes together in a loop. Stores the xoring 
+#result into an array. This array is then turned into a 
+#bytearray as an output.
 def xoring_key_file(key,file):
     result = [0] * len(file)
     count = 0
@@ -133,6 +149,13 @@ def xoring_key_file(key,file):
 
     return bytearray(result)
 
+#Takes a given index and groups the indexed Pi digit 
+#by one or two of its subsequent peers depending on the
+#digit itself. Returns a range from 0 to 249 int strings.
+#0: 0 to 9
+#1: 100 to 199
+#2: 200 to 249 or 25 to 29
+#3-9: 30 to 99
 
 def determine_pad(pos):
     if pos < 0:
@@ -162,6 +185,11 @@ def determine_pad(pos):
         case _:
             return TEN_THOUSAND_PI[pos] + "" + TEN_THOUSAND_PI[pos1]
 
+#Creates a bytearray using Pi digit bytes. The size of 
+#the bytearray is determined by the padding size necessary 
+#to extend the original key to 1kb. This return is later 
+#used to extend the key bytearray.
+
 def extending_key(key,size):
     PI_pos = hash_key(key)
 
@@ -176,7 +204,8 @@ def extending_key(key,size):
     return bytearray(result)
 
 
-#Subsitute for no consistent hash function
+#Subsitute for no consistent hash function because python does 
+#not have a consistent hash function across devices or instances.
 #1. Consider the key by every individual byte
 #2. Multiply that byte by its position in the key
 #3. Add them together to determine the PI_position
@@ -189,6 +218,11 @@ def hash_key(key):
     
     return sum % 10000
 
+#Creates a bytearray by grabbing random bytes from the 
+#original file bytearray. The size of the bytearray is determined
+#by the padding size necessary to extend the original file
+#to 16mb. This return is later used to extend the file 
+#bytearray.
 
 def extending_file(file):
     req_pad = 16000000 - len(file)
@@ -207,13 +241,22 @@ import heapq                                # Implementing a priority queue (min
 from collections import Counter             # Counts occurrences of each byte in data
 
 # Huffman Tree Node
+#Represents a node in the Huffman Tree, storing a byte, 
+#its frequency, and pointers to left and right children 
+#(used for tree traversal and building).
 class Node:
+    #Initializes a node in the Huffman Tree.
     def __init__(self, byte, freq):
         self.byte = byte                   # Byte/character this node represents
         self.freq = freq                   # Frequency of this specific byte in the data
         self.left = None                   # Left child
         self.right = None                  # Right child
 
+    #Defines the less-than comparison(<) between two node instances. 
+    #This is required for using nodes in a priority queue 
+    #(min-heap) with Python’s heap module. Compares nodes by 
+    #their freq attribute, this ensures the node with the 
+    #lower frequency is given higher priority in the heap.
     def __lt__(self, other):               # Min-heap comparison
         return self.freq < other.freq      # Sorting nodes by frequency
 
