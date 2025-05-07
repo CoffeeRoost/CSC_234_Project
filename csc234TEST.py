@@ -14,6 +14,8 @@ import timeit
 
 from mpmath import mp
 
+csv_frequency_track = "result_here.csv"
+
 mp.dps = 10000 # Set precision for desired decimal places
 TEN_THOUSAND_PI = "3"+str(mp.pi)[2:]
 paddingFile = "?>*:||:*<?"
