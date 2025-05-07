@@ -461,7 +461,7 @@ def pad_with_pi(data, required_size):
             padded_data.append(0) #pad with 0 if you can't get 2 digits.
 
         pi_index = (pi_index + 2) % len(pi_digits) #cycle through the digits of pi
-    return padded_data[:required_size]  # Truncate if necessary
+    return padded_data #truncation removed
 
 #Removes the pi padding from a bytearray, identifying and removing 
 #the pi digit sequence.
@@ -470,8 +470,7 @@ def unpad_with_pi(data):
     pi_digits = str(math.pi).replace('.', '')
     pi_bytes = bytearray()
 
-    # Convert the first 10 digits of pi to bytes, assuming pairs of digits are bytes
-    for i in range(0, 20, 2):  # Check first 20 digits because key padding might need more than data padding
+    for i in range(0, 40, 2):  # Check first 40 digits because key padding might need more than data padding
         digit_pair = pi_digits[i:i + 2]
         if len(digit_pair) == 2:  # Handle cases where pi_digits has an odd length
             try:
@@ -633,7 +632,6 @@ def main():
         #encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
 
         encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
-        encrypt_v1.extend(extending_file(encrypt_v1))
 
         """
         I moved huffman here because we are not operating with main(). You guys can adjust however you want.
@@ -661,7 +659,7 @@ def main():
         key = mykey
 
         # Constants
-        hypercube_length, square_length, num_dimensions = 8, 160, 3
+        hypercube_length, square_length, num_dimensions = 8, 512, 3
 
         # Calculate required sizes
         data_size = hypercube_length**num_dimensions * square_length*square_length // 8
