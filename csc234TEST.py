@@ -237,8 +237,10 @@ def extending_file(file):
 
 # Huffman encoding starts here
 
-import heapq                                # Implementing a priority queue (min-heap)
-from collections import Counter             # Counts occurrences of each byte in data
+# Implementing a priority queue (min-heap)
+# Counts occurrences of each byte in data
+import heapq                                
+from collections import Counter             
 
 # Huffman Tree Node
 #Represents a node in the Huffman Tree, storing a byte, 
