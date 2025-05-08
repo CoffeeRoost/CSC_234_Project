@@ -660,7 +660,7 @@ def main():
         key = mykey
 
         # Constants
-        hypercube_length, square_length, num_dimensions = 8, 450, 3
+        hypercube_length, square_length, num_dimensions = 8, 400, 3
 
         # Calculate required sizes
         data_size = hypercube_length**num_dimensions * square_length*square_length // 8
@@ -701,7 +701,7 @@ def main():
         key = mykey
 
         # Constants
-        hypercube_length, square_length, num_dimensions = 8, 450, 3
+        hypercube_length, square_length, num_dimensions = 8, 400, 3
 
         # Calculate required sizes
         data_size = hypercube_length**num_dimensions * square_length*square_length // 8
