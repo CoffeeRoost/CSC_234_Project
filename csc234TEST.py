@@ -227,7 +227,7 @@ def hash_key(key):
 #bytearray.
 
 def extending_file(file):
-    req_pad = 16000000 - len(file)
+    req_pad = 12000000 - len(file)
 
     my_bytes = np.random.randint(len(file),size=req_pad)
     result = [0] * req_pad
@@ -668,15 +668,24 @@ def main():
 
         # Pad with pi
         original_byte_array = pad_with_pi(compressed_data, data_size)
+        
+        # Pad smaller things smaller for efficiency
+
+        hypercube_length, square_length, num_dimensions = 8, 50, 3
         padding2 = pad_with_pi(padding2,data_size)
         tree2 = pad_with_pi(tree2,data_size)
-        
+    
 
         print(original_byte_array[:10])
 
         key = pad_with_pi(key, key_size)
-
+        
+        hypercube_length, square_length, num_dimensions = 8, 400, 3
         encrypted_cube = encrypt_byte_array(original_byte_array, key, hypercube_length, square_length, num_dimensions)
+
+        # Pad smaller things smaller for efficiency
+
+        hypercube_length, square_length, num_dimensions = 8, 50, 3
         padding2 = encrypt_byte_array(padding2, key, hypercube_length, square_length, num_dimensions)
         tree2 = encrypt_byte_array(tree2, key, hypercube_length, square_length, num_dimensions)
 
@@ -710,6 +719,10 @@ def main():
         key = pad_with_pi(key, key_size)
         # decrypt then unpad with pi
         decrypted_byte_array = decrypt_hypercube(shifted_hypercube, key, hypercube_length, square_length, num_dimensions)
+
+        #used smaller
+        
+        hypercube_length, square_length, num_dimensions = 8, 50, 3
         padding = decrypt_hypercube(padding, key, hypercube_length, square_length, num_dimensions)
         tree = decrypt_hypercube(tree, key, hypercube_length, square_length, num_dimensions)
 
