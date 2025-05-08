@@ -552,11 +552,6 @@ def sort_by_byte(dictionary_f):
 
 def csv_maker(original_byte=1,xoring_byte=1,huffman_byte=1,encrypted_bit=1,decrypted_bit=1):
     d = pd.read_csv(csv_frequency_track) 
-
-    a = []
-    for i in range(256):
-        a.append(i)
-
     if decrypted_bit == 1:
         d["ORIGINAL"] = sort_by_byte(build_freq_table(original_byte))
         d["E:XORING&PADDING"] = sort_by_byte(build_freq_table(xoring_byte))
@@ -567,8 +562,6 @@ def csv_maker(original_byte=1,xoring_byte=1,huffman_byte=1,encrypted_bit=1,decry
         d["D:HUFFMAN"] = sort_by_byte(build_freq_table(huffman_byte))
         d["D:XORING&PADDING"] = sort_by_byte(build_freq_table(xoring_byte))
         d["DECRYPTED"] = sort_by_byte(build_freq_table(decrypted_bit))
-
-    d["BYTE"] = a 
 
     d.to_csv(csv_frequency_track,index=False)
 
@@ -623,6 +616,7 @@ def main():
 
     myfile = bytearray()
 
+    start_time = time.time()
 
     if deen:
         f = open(file,'rb')
@@ -637,10 +631,9 @@ def main():
 
         #encrypt_v0.extend(extending_file(encrypt_v0))
         #encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
-
+    
         encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
         encrypt_v1.extend(extending_file(encrypt_v1))
-
         """
         I moved huffman here because we are not operating with main(). You guys can adjust however you want.
         """
@@ -667,7 +660,7 @@ def main():
         key = mykey
 
         # Constants
-        hypercube_length, square_length, num_dimensions = 8, 512, 3
+        hypercube_length, square_length, num_dimensions = 8, 450, 3
 
         # Calculate required sizes
         data_size = hypercube_length**num_dimensions * square_length*square_length // 8
@@ -708,7 +701,7 @@ def main():
         key = mykey
 
         # Constants
-        hypercube_length, square_length, num_dimensions = 8, 160, 3
+        hypercube_length, square_length, num_dimensions = 8, 450, 3
 
         # Calculate required sizes
         data_size = hypercube_length**num_dimensions * square_length*square_length // 8
@@ -763,6 +756,8 @@ def main():
             f.write(decrypted_data)
 
         print("View your file here:", output_path)
+    end_time = time.time()
+    print(f"runtime = {end_time-start_time}")
 
 if __name__=="__main__":
     main()
