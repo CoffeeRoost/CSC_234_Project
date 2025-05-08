@@ -568,7 +568,7 @@ def csv_maker(original_byte=1,xoring_byte=1,huffman_byte=1,encrypted_bit=1,decry
 def main():
 
     #Input Start
-    print("   ___\n__/ o |\n   |  |_____ V\n   |        |\n   \________/\n")
+    print("   ___\n__/ o |\n   |  |_____ V\n   |        |\n   \\________/\n")
 
     #if true, encrypt
     #if false, decrypt
