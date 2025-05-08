@@ -552,6 +552,11 @@ def sort_by_byte(dictionary_f):
 
 def csv_maker(original_byte=1,xoring_byte=1,huffman_byte=1,encrypted_bit=1,decrypted_bit=1):
     d = pd.read_csv(csv_frequency_track) 
+
+    a = []
+    for i in range(256):
+        a.append(i)
+
     if decrypted_bit == 1:
         d["ORIGINAL"] = sort_by_byte(build_freq_table(original_byte))
         d["E:XORING&PADDING"] = sort_by_byte(build_freq_table(xoring_byte))
@@ -562,6 +567,8 @@ def csv_maker(original_byte=1,xoring_byte=1,huffman_byte=1,encrypted_bit=1,decry
         d["D:HUFFMAN"] = sort_by_byte(build_freq_table(huffman_byte))
         d["D:XORING&PADDING"] = sort_by_byte(build_freq_table(xoring_byte))
         d["DECRYPTED"] = sort_by_byte(build_freq_table(decrypted_bit))
+
+    d["BYTE"] = a 
 
     d.to_csv(csv_frequency_track,index=False)
 
@@ -632,6 +639,7 @@ def main():
         #encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
 
         encrypt_v1 = xoring_key_file(mykey,encrypt_v0)
+        encrypt_v1.extend(extending_file(encrypt_v1))
 
         """
         I moved huffman here because we are not operating with main(). You guys can adjust however you want.
