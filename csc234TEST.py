@@ -666,8 +666,7 @@ def main():
 
         key = mykey
 
-        # Constants
-        hypercube_length, square_length, num_dimensions = 8, 400, 3
+        hypercube_length, square_length, num_dimensions = 8, 450, 3
 
         # Calculate required sizes
         data_size = hypercube_length**num_dimensions * square_length*square_length // 8
@@ -675,24 +674,23 @@ def main():
 
         # Pad with pi
         original_byte_array = pad_with_pi(compressed_data, data_size)
-        
-        # Pad smaller things smaller for efficiency
-
-        hypercube_length, square_length, num_dimensions = 8, 50, 3
-        padding2 = pad_with_pi(padding2,data_size)
-        tree2 = pad_with_pi(tree2,data_size)
-    
-
-        print(original_byte_array[:10])
 
         key = pad_with_pi(key, key_size)
-        
-        hypercube_length, square_length, num_dimensions = 8, 400, 3
+
         encrypted_cube = encrypt_byte_array(original_byte_array, key, hypercube_length, square_length, num_dimensions)
+        
+        # Pad smaller things smaller for efficiency
+
+        print(original_byte_array[:10])
+        
 
         # Pad smaller things smaller for efficiency
 
         hypercube_length, square_length, num_dimensions = 8, 50, 3
+        data_size = hypercube_length**num_dimensions * square_length*square_length // 8
+
+        padding2 = pad_with_pi(padding2,data_size)
+        tree2 = pad_with_pi(tree2,data_size)
         padding2 = encrypt_byte_array(padding2, key, hypercube_length, square_length, num_dimensions)
         tree2 = encrypt_byte_array(tree2, key, hypercube_length, square_length, num_dimensions)
 
@@ -717,7 +715,7 @@ def main():
         key = mykey
 
         # Constants
-        hypercube_length, square_length, num_dimensions = 8, 400, 3
+        hypercube_length, square_length, num_dimensions = 8, 450, 3
 
         # Calculate required sizes
         data_size = hypercube_length**num_dimensions * square_length*square_length // 8
