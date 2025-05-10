@@ -227,7 +227,7 @@ def hash_key(key):
 #bytearray.
 
 def extending_file(file):
-    req_pad = 12000000 - len(file)
+    req_pad = 16000000 - len(file)
 
     my_bytes = np.random.randint(len(file),size=req_pad)
     result = [0] * req_pad
