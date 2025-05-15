@@ -123,7 +123,10 @@ def myAddition_padding(in_range_file):
         ('input_fc','expected_fc','mode_fc'),
         (
             ('emptyFile','File is empty',1),
+            ('emptyFile','File is empty',2),
             ('exceedFile','File exceeds 12mb maximum',1),
+            ('nonexistentFile','File does not exist',2),
+            ('exceedFile','exceedFile',2),
             ('in_range_file','in_range_file',1),
             ('nonexistentFile','File does not exist',1),
             ('in_range_file','in_range_file',0),
@@ -178,11 +181,14 @@ def test_confirm_loop(input_cl,expected_cl):
         ('input_cFS','expected_cFS','mode_cFS'),
         (
             ('emptyFile',-2,1),
+            ('emptyFile',-2,2),
             ('exceedFile',0,1),
             ('in_range_file',1,1),
             ('nonexistentFile',-1,1),
             ('in_range_file',1,0),
             ('nonexistentFile',-1,0),
+            ('exceedFile',1,2),
+            ('nonexistentFile',-1,2),
         ),
 )
 
@@ -443,6 +449,5 @@ def test_huffman_decode_incorrect_tree(simple_data):
     # Expect an AttributeError when using the wrong tree.
     with pytest.raises(AttributeError):
         mod.huffman_decode(binary_str, wrong_tree)
-
 
 
