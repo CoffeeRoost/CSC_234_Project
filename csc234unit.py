@@ -197,10 +197,43 @@ def test_checkFileSize(input_cFS,expected_cFS,mode_cFS,request):
     assert mod.checkFileSize(input_cFS,mode_cFS) == expected_cFS
 
 
+@pytest.fixture
+def one_filled_byte_array_big():
+    result = bytearray()
+    for i in range(myInRangeFileSize*2):
+        result.append(1)
+    return result
+
+@pytest.fixture
+def zero_filled_byte_array_big():
+    result = bytearray()
+    for i in range(myInRangeFileSize*2):
+        result.append(0)
+    return result
+    
+@pytest.fixture
+def one_filled_byte_array_small():
+    result = bytearray()
+    for i in range(myInRangeFileSize):
+        result.append(1)
+    return result
+
+@pytest.mark.parametrize(
+        ('input_file','input_key','expected_x'),
+        (
+            ('one_filled_byte_array_big','one_filled_byte_array_small','zero_filled_byte_array_big'),
+            ('one_filled_byte_array_small','one_filled_byte_array_big','zero_byte_array'),
+            ('one_filled_byte_array_small','one_filled_byte_array_small','zero_byte_array'),
+        ),
+)
+
 #xoring_key_file test
 #TODO: test for mismatched sizes (file > key) (file < key) (file != key)
-def test_xoring_key_file(myFileSize_byte_array,zero_byte_array):
-    assert mod.xoring_key_file(myFileSize_byte_array,myFileSize_byte_array) == zero_byte_array
+def test_xoring_key_file(input_file,input_key,expected_x,request):
+    input_file = request.getfixturevalue(input_file)
+    input_key = request.getfixturevalue(input_key)
+    expected_x = request.getfixturevalue(expected_x)
+    assert mod.xoring_key_file(input_key,input_file) == expected_x
 
 #extending_key test
 
@@ -449,5 +482,4 @@ def test_huffman_decode_incorrect_tree(simple_data):
     # Expect an AttributeError when using the wrong tree.
     with pytest.raises(AttributeError):
         mod.huffman_decode(binary_str, wrong_tree)
-
 
