@@ -10,7 +10,6 @@ import time
 import cProfile
 import pstats
 import pandas as pd
-import timeit
 
 from mpmath import mp
 
@@ -769,8 +768,7 @@ def main():
         #Uncomment for frequency analysis on bytes csv
         #csv_maker(xoring_byte=xor_encrypted_data,huffman_byte=unpadded_byte_array,encrypted_bit=shifted_hypercube,decrypted_bit=decrypted_data)
 
-        output_path = input("Where to save??: ").strip()
-        with open(output_path, 'wb') as f:
+        with open(fileName, 'wb') as f:
             f.write(decrypted_data)
 
         print("View your file here:", output_path)
